@@ -444,8 +444,8 @@ function Home() {
                   </div>
 
                   <div className="custom-dropdown" ref={dropdownRef}>
-                    <div 
-                      className={`input-box-v2 dropdown-trigger no-icon-trigger ${isDropdownOpen ? 'active' : ''}`} 
+                    <div
+                      className={`input-box-v2 dropdown-trigger no-icon-trigger ${isDropdownOpen ? 'active' : ''}`}
                       onClick={() => !isSupportTypesLoading && setIsDropdownOpen(!isDropdownOpen)}
                     >
                       <div className="input-content-v2">
@@ -459,7 +459,7 @@ function Home() {
 
                     <AnimatePresence>
                       {isDropdownOpen && (
-                        <motion.div 
+                        <motion.div
                           className="dropdown-menu-v2"
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -471,14 +471,14 @@ function Home() {
                               <div className="dropdown-empty">No categories found</div>
                             ) : (
                               supportTypes.map((item) => (
-                                <div 
-                                  key={item.internal_lookup_id} 
+                                <div
+                                  key={item.internal_lookup_id}
                                   className={`dropdown-item-v2 text-only ${formData.categoryId === item.internal_lookup_id.toString() ? 'selected' : ''}`}
                                   onClick={() => {
-                                    setFormData(prev => ({ 
-                                      ...prev, 
+                                    setFormData(prev => ({
+                                      ...prev,
                                       category: item.lookup_data,
-                                      categoryId: item.internal_lookup_id.toString() 
+                                      categoryId: item.internal_lookup_id.toString()
                                     }));
                                     setIsDropdownOpen(false);
                                   }}
@@ -825,7 +825,7 @@ function Home() {
       <AnimatePresence>
         {selectedTicket && (
           <div className="modal-overlay" onClick={() => setSelectedTicket(null)}>
-            <motion.div 
+            <motion.div
               className="detail-popup-page"
               variants={modalVariants}
               initial="hidden"
@@ -835,9 +835,9 @@ function Home() {
             >
               <div className="detail-header">
                 <div className="detail-header-left">
-                  <div className="detail-status-pill" style={{ 
+                  <div className="detail-status-pill" style={{
                     color: getStatusConfig(selectedTicket.CallStatusText).color,
-                    background: getStatusConfig(selectedTicket.CallStatusText).bg 
+                    background: getStatusConfig(selectedTicket.CallStatusText).bg
                   }}>
                     <i className={`fa-solid ${getStatusConfig(selectedTicket.CallStatusText).icon}`}></i>
                     {selectedTicket.CallStatusText}
@@ -917,31 +917,32 @@ function Home() {
             </motion.div>
           </div>
         )}
+      </AnimatePresence>
 
-      {/* Mobile Nav for responsiveness */}
-      <div className="mobile-nav-v2">
-        {navItems.map(item => (
-          item.href ? (
-            <a key={item.name} className="mobile-nav-item" href={item.href} style={{ textDecoration: 'none' }}>
-              <i className={`fa-solid ${item.icon}`}></i>
-              <span>{item.name}</span>
-            </a>
-          ) : (
-            <div key={item.name} className={`mobile-nav-item ${activeTab === item.name ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab(item.name);
-                if (item.name === 'Recent Records') {
-                  fetchRecentTickets();
-                } else if (item.name === 'Dashboard') {
-                  setIsRecentOpen(false);
-                }
-              }}>
-              <i className={`fa-solid ${item.icon}`}></i>
-              <span>{item.name}</span>
-            </div>
-          )
-        ))}
-      </div>
+        {/* Mobile Nav for responsiveness */}
+        <div className="mobile-nav-v2">
+          {navItems.map(item => (
+            item.href ? (
+              <a key={item.name} className="mobile-nav-item" href={item.href} style={{ textDecoration: 'none' }}>
+                <i className={`fa-solid ${item.icon}`}></i>
+                <span>{item.name}</span>
+              </a>
+            ) : (
+              <div key={item.name} className={`mobile-nav-item ${activeTab === item.name ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveTab(item.name);
+                  if (item.name === 'Recent Records') {
+                    fetchRecentTickets();
+                  } else if (item.name === 'Dashboard') {
+                    setIsRecentOpen(false);
+                  }
+                }}>
+                <i className={`fa-solid ${item.icon}`}></i>
+                <span>{item.name}</span>
+              </div>
+            )
+          ))}
+        </div>
     </div>
   );
 }
