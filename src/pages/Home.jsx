@@ -26,7 +26,7 @@ function Home() {
   // State for UI feedback
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [activeTab, setActiveTab] = useState('Dashboard');
+  const [activeTab, setActiveTab] = useState('Home');
   const [isAdvancedModalOpen, setIsAdvancedModalOpen] = useState(false);
 
   // Support Type dropdown state
@@ -311,7 +311,7 @@ function Home() {
   };
 
   const navItems = [
-    { name: 'Dashboard', icon: 'fa-house' },
+    { name: 'Home', icon: 'fa-house' },
     { name: 'Agent Status', icon: 'fa-user-group', href: '/agent-status' },
     { name: 'Recent Records', icon: 'fa-clock-rotate-left' },
   ];
@@ -919,30 +919,30 @@ function Home() {
         )}
       </AnimatePresence>
 
-        {/* Mobile Nav for responsiveness */}
-        <div className="mobile-nav-v2">
-          {navItems.map(item => (
-            item.href ? (
-              <a key={item.name} className="mobile-nav-item" href={item.href} style={{ textDecoration: 'none' }}>
-                <i className={`fa-solid ${item.icon}`}></i>
-                <span>{item.name}</span>
-              </a>
-            ) : (
-              <div key={item.name} className={`mobile-nav-item ${activeTab === item.name ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveTab(item.name);
-                  if (item.name === 'Recent Records') {
-                    fetchRecentTickets();
-                  } else if (item.name === 'Dashboard') {
-                    setIsRecentOpen(false);
-                  }
-                }}>
-                <i className={`fa-solid ${item.icon}`}></i>
-                <span>{item.name}</span>
-              </div>
-            )
-          ))}
-        </div>
+      {/* Mobile Nav for responsiveness */}
+      <div className="mobile-nav-v2">
+        {navItems.map(item => (
+          item.href ? (
+            <a key={item.name} className="mobile-nav-item" href={item.href} style={{ textDecoration: 'none' }}>
+              <i className={`fa-solid ${item.icon}`}></i>
+              <span>{item.name}</span>
+            </a>
+          ) : (
+            <div key={item.name} className={`mobile-nav-item ${activeTab === item.name ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab(item.name);
+                if (item.name === 'Recent Records') {
+                  fetchRecentTickets();
+                } else if (item.name === 'Home') {
+                  setIsRecentOpen(false);
+                }
+              }}>
+              <i className={`fa-solid ${item.icon}`}></i>
+              <span>{item.name}</span>
+            </div>
+          )
+        ))}
+      </div>
     </div>
   );
 }
