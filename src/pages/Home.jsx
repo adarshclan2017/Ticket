@@ -32,6 +32,8 @@ function Home() {
   // Support Type dropdown state
   const [supportTypes, setSupportTypes] = useState([]);
   const [isSupportTypesLoading, setIsSupportTypesLoading] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = React.useRef(null);
 
   // State for Sidebar Toggle
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -105,6 +107,17 @@ function Home() {
       }
     };
     fetchSupportTypes();
+  }, []);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Register Service Worker and Request permission on mount
@@ -194,7 +207,7 @@ function Home() {
       }
     } catch (err) {
       console.error('Notification error:', err);
-      try { new Notification(title, options); } catch (_) {}
+      try { new Notification(title, options); } catch (_) { }
     }
   };
 
@@ -248,10 +261,10 @@ function Home() {
       setIsSuccess(true);
       console.log('Ticket submission successful:', result);
       await showPushNotification({
-        phone:    formData.phoneNumber,
+        phone: formData.phoneNumber,
         category: formData.category,
-        branch:   advancedSettings.branchName || 'INFOLAB TECHNOLOGIES HO',
-        remarks:  formData.remarks,
+        branch: advancedSettings.branchName || 'INFOLAB TECHNOLOGIES HO',
+        remarks: formData.remarks,
       });
 
       setTimeout(() => {
@@ -298,21 +311,18 @@ function Home() {
 
   const navItems = [
     { name: 'Dashboard', icon: 'fa-house' },
-    { name: 'Tickets', icon: 'fa-ticket' },
     { name: 'Agent Status', icon: 'fa-user-group', href: '/agent-status' },
     { name: 'Recent Records', icon: 'fa-clock-rotate-left' },
-    { name: 'Analytics', icon: 'fa-chart-line' },
-    { name: 'Settings', icon: 'fa-gears' },
   ];
 
   // Status badge config
   const getStatusConfig = (statusText) => {
     switch ((statusText || '').toLowerCase()) {
-      case 'raised':    return { color: '#f59e0b', bg: '#fef3c7', icon: 'fa-circle-exclamation' };
-      case 'assigned':  return { color: '#3b82f6', bg: '#eff6ff', icon: 'fa-user-check' };
-      case 'resolved':  return { color: '#10b981', bg: '#d1fae5', icon: 'fa-circle-check' };
-      case 'closed':    return { color: '#6b7280', bg: '#f3f4f6', icon: 'fa-circle-xmark' };
-      default:          return { color: '#8b5cf6', bg: '#ede9fe', icon: 'fa-circle-dot' };
+      case 'raised': return { color: '#f59e0b', bg: '#fef3c7', icon: 'fa-circle-exclamation' };
+      case 'assigned': return { color: '#3b82f6', bg: '#eff6ff', icon: 'fa-user-check' };
+      case 'resolved': return { color: '#10b981', bg: '#d1fae5', icon: 'fa-circle-check' };
+      case 'closed': return { color: '#6b7280', bg: '#f3f4f6', icon: 'fa-circle-xmark' };
+      default: return { color: '#8b5cf6', bg: '#ede9fe', icon: 'fa-circle-dot' };
     }
   };
 
@@ -347,7 +357,10 @@ function Home() {
               <div
                 key={item.name}
                 className={`nav-item ${activeTab === item.name ? 'active' : ''}`}
-                onClick={() => setActiveTab(item.name)}
+                onClick={() => {
+                  setActiveTab(item.name);
+                  if (item.name === 'Recent Records') fetchRecentTickets();
+                }}
                 title={isSidebarCollapsed ? item.name : ''}
               >
                 <i className={`fa-solid ${item.icon}`}></i>
@@ -375,7 +388,7 @@ function Home() {
         <header className="content-header">
           <div className="header-left">
             <motion.h1 variants={itemVariants}>Support Desk</motion.h1>
-            <motion.p variants={itemVariants}>Manage and track your technical support incidents</motion.p>
+
           </div>
           <div className="header-right-group">
             {notificationPermission !== 'granted' && (
@@ -389,13 +402,7 @@ function Home() {
                 <i className={`fa-solid ${notificationPermission === 'denied' ? 'fa-bell-slash' : 'fa-bell'}`}></i>
               </motion.button>
             )}
-            <div className="user-profile">
-              <div className="user-avatar"></div>
-              <div className="user-info">
-                <div style={{ fontSize: '14px', fontWeight: '700' }}>Adarsh Clan</div>
-                <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Administrator</div>
-              </div>
-            </div>
+
           </div>
         </header>
 
@@ -406,7 +413,7 @@ function Home() {
               <div className="feature-info">
                 <span className="tiny-label">New Incident</span>
                 <h3>File a support ticket</h3>
-                <p>Fill in all required fields for faster resolution</p>
+
               </div>
               <div className="feature-icon-v2">
                 <i className="fa-solid fa-ticket-simple"></i>
@@ -435,31 +442,57 @@ function Home() {
                     </div>
                   </div>
 
-                    <div className="input-box-v2">
-                      <div className="input-icon-v2">
-                        <i className="fa-solid fa-layer-group"></i>
-                      </div>
+                  <div className="custom-dropdown" ref={dropdownRef}>
+                    <div 
+                      className={`input-box-v2 dropdown-trigger no-icon-trigger ${isDropdownOpen ? 'active' : ''}`} 
+                      onClick={() => !isSupportTypesLoading && setIsDropdownOpen(!isDropdownOpen)}
+                    >
                       <div className="input-content-v2">
                         <label>Ticket Category</label>
-                        <select
-                          name="category"
-                          value={formData.categoryId}
-                          onChange={handleCategoryChange}
-                          required
-                          disabled={isSupportTypesLoading}
-                        >
-                          <option value="">
-                            {isSupportTypesLoading ? 'Loading...' : 'Select category'}
-                          </option>
-                          {supportTypes.map((item) => (
-                            <option key={item.internal_lookup_id} value={item.internal_lookup_id}>
-                              {item.lookup_data}
-                            </option>
-                          ))}
-                        </select>
+                        <div className={`selected-value ${!formData.category ? 'placeholder' : ''}`}>
+                          {isSupportTypesLoading ? 'Loading...' : formData.category || 'Select category'}
+                        </div>
                       </div>
-                      <i className="fa-solid fa-chevron-down select-arrow"></i>
+                      <i className={`fa-solid fa-chevron-down select-arrow ${isDropdownOpen ? 'rotated' : ''}`}></i>
                     </div>
+
+                    <AnimatePresence>
+                      {isDropdownOpen && (
+                        <motion.div 
+                          className="dropdown-menu-v2"
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                        >
+                          <div className="dropdown-scroll-area">
+                            {supportTypes.length === 0 ? (
+                              <div className="dropdown-empty">No categories found</div>
+                            ) : (
+                              supportTypes.map((item) => (
+                                <div 
+                                  key={item.internal_lookup_id} 
+                                  className={`dropdown-item-v2 text-only ${formData.categoryId === item.internal_lookup_id.toString() ? 'selected' : ''}`}
+                                  onClick={() => {
+                                    setFormData(prev => ({ 
+                                      ...prev, 
+                                      category: item.lookup_data,
+                                      categoryId: item.internal_lookup_id.toString() 
+                                    }));
+                                    setIsDropdownOpen(false);
+                                  }}
+                                >
+                                  <div className="item-text">
+                                    <span>{item.lookup_data}</span>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
 
                 <div className="input-box-v2 textarea-box">
@@ -531,10 +564,7 @@ function Home() {
               <i className="fa-solid fa-chevron-right"></i>
             </motion.div>
 
-            <motion.div className="side-card-v2 tips-card" variants={itemVariants}>
-              <span className="tiny-label">Quick Tip</span>
-              <p>Including detailed remarks can speed up resolution by 40%.</p>
-            </motion.div>
+
           </div>
         </div>
 
@@ -790,11 +820,22 @@ function Home() {
 
       {/* Mobile Nav for responsiveness */}
       <div className="mobile-nav-v2">
-        {navItems.slice(0, 4).map(item => (
-          <div key={item.name} className={`mobile-nav-item ${activeTab === item.name ? 'active' : ''}`} onClick={() => setActiveTab(item.name)}>
-            <i className={`fa-solid ${item.icon}`}></i>
-            <span>{item.name}</span>
-          </div>
+        {navItems.map(item => (
+          item.href ? (
+            <a key={item.name} className="mobile-nav-item" href={item.href} style={{ textDecoration: 'none' }}>
+              <i className={`fa-solid ${item.icon}`}></i>
+              <span>{item.name}</span>
+            </a>
+          ) : (
+            <div key={item.name} className={`mobile-nav-item ${activeTab === item.name ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab(item.name);
+                if (item.name === 'Recent Records') fetchRecentTickets();
+              }}>
+              <i className={`fa-solid ${item.icon}`}></i>
+              <span>{item.name}</span>
+            </div>
+          )
         ))}
       </div>
     </div>

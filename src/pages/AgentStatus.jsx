@@ -186,7 +186,7 @@ function AgentStatus() {
             <div className="as-hero-left">
               <span className="as-hero-badge"><i className="fa-solid fa-signal"></i> Live Monitor</span>
               <h1>Agent Status</h1>
-              <p>Real-time team availability &amp; workload overview</p>
+
             </div>
             <div className="as-hero-right">
               <div className="as-date-input">
