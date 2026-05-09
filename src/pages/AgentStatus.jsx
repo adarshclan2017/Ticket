@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE } from '../apiConfig';
 import './AgentStatus.css';
 
 /* ── Utility: initials from full name ───────── */
@@ -46,7 +47,7 @@ function AgentStatus() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/unniService.asmx/loadAgentStatus?EntryDate=${date}`);
+      const res = await fetch(`${API_BASE}/unniService.asmx/loadAgentStatus?EntryDate=${date}`);
       const text = await res.text();
       const match = text.match(/<string[^>]*>(.*)<\/string>/s);
       const jsonStr = match ? match[1] : text;

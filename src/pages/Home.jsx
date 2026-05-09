@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { API_BASE } from '../apiConfig';
 import './Home.css';
 
 function Home() {
@@ -90,7 +91,7 @@ function Home() {
     const fetchSupportTypes = async () => {
       setIsSupportTypesLoading(true);
       try {
-        const res = await fetch('/api/unniService.asmx/loadSupportType');
+        const res = await fetch(`${API_BASE}/unniService.asmx/loadSupportType`);
         const text = await res.text();
         // The API returns JSON wrapped in XML <string> tags
         const match = text.match(/<string[^>]*>(.*)<\/string>/s);
@@ -220,7 +221,7 @@ function Home() {
         Remarks: formData.remarks,
       });
 
-      const url = `/api/unniService.asmx/SaveSupportTicket?${params.toString()}`;
+      const url = `${API_BASE}/unniService.asmx/SaveSupportTicket?${params.toString()}`;
       console.log('Submitting ticket to:', url);
 
       const res = await fetch(url);
@@ -272,7 +273,7 @@ function Home() {
     setIsRecentLoading(true);
     setRecentError(null);
     try {
-      const res = await fetch('/api/unniService.asmx/loadRaisedSupportTickets?InternalUserID=4');
+      const res = await fetch(`${API_BASE}/unniService.asmx/loadRaisedSupportTickets?InternalUserID=4`);
       const text = await res.text();
       const match = text.match(/<string[^>]*>(.*)<\/string>/s);
       const jsonStr = match ? match[1] : text;
