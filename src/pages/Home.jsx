@@ -36,13 +36,14 @@ function Home() {
   const dropdownRef = React.useRef(null);
 
   // State for Sidebar Toggle
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(window.innerWidth <= 1024);
 
   // State for Recent Records Panel
   const [isRecentOpen, setIsRecentOpen] = useState(false);
   const [recentTickets, setRecentTickets] = useState([]);
   const [isRecentLoading, setIsRecentLoading] = useState(false);
   const [recentError, setRecentError] = useState(null);
+  const [selectedTicket, setSelectedTicket] = useState(null);
 
   // Animation variants
   const containerVariants = {
@@ -742,6 +743,8 @@ function Home() {
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
+                      onClick={() => setSelectedTicket(ticket)}
+                      style={{ cursor: 'pointer' }}
                     >
                       {/* Card Top Row */}
                       <div className="rtc-top">
@@ -818,6 +821,103 @@ function Home() {
         )}
       </AnimatePresence>
 
+      {/* Ticket Details Popup Page */}
+      <AnimatePresence>
+        {selectedTicket && (
+          <div className="modal-overlay" onClick={() => setSelectedTicket(null)}>
+            <motion.div 
+              className="detail-popup-page"
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="detail-header">
+                <div className="detail-header-left">
+                  <div className="detail-status-pill" style={{ 
+                    color: getStatusConfig(selectedTicket.CallStatusText).color,
+                    background: getStatusConfig(selectedTicket.CallStatusText).bg 
+                  }}>
+                    <i className={`fa-solid ${getStatusConfig(selectedTicket.CallStatusText).icon}`}></i>
+                    {selectedTicket.CallStatusText}
+                  </div>
+                  <h2>Ticket #{selectedTicket.TicketNo}</h2>
+                </div>
+                <button className="detail-close-btn" onClick={() => setSelectedTicket(null)}>
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+
+              <div className="detail-scroll-content">
+                <div className="detail-section">
+                  <h4 className="detail-label">Incident Overview</h4>
+                  <div className="detail-info-grid">
+                    <div className="detail-info-item">
+                      <i className="fa-solid fa-user"></i>
+                      <div className="info-text">
+                        <label>User</label>
+                        <span>{selectedTicket.UserName}</span>
+                      </div>
+                    </div>
+                    <div className="detail-info-item">
+                      <i className="fa-solid fa-building"></i>
+                      <div className="info-text">
+                        <label>Branch</label>
+                        <span>{selectedTicket.BranchName}</span>
+                      </div>
+                    </div>
+                    <div className="detail-info-item">
+                      <i className="fa-solid fa-phone"></i>
+                      <div className="info-text">
+                        <label>Phone</label>
+                        <span>{selectedTicket.Phone}</span>
+                      </div>
+                    </div>
+                    <div className="detail-info-item">
+                      <i className="fa-solid fa-layer-group"></i>
+                      <div className="info-text">
+                        <label>Category</label>
+                        <span>{selectedTicket.Type}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h4 className="detail-label">Problem Remarks</h4>
+                  <div className="detail-remarks-box">
+                    <i className="fa-solid fa-quote-left"></i>
+                    <p>{selectedTicket.Remarks || 'No remarks provided.'}</p>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h4 className="detail-label">Timeline Details</h4>
+                  <div className="detail-meta-row">
+                    <div className="meta-sub-item">
+                      <i className="fa-regular fa-calendar"></i>
+                      <span>Created: {selectedTicket.CreationDate}</span>
+                    </div>
+                    {selectedTicket.Delay && selectedTicket.Delay !== '0' && (
+                      <div className="meta-sub-item delay">
+                        <i className="fa-solid fa-clock"></i>
+                        <span>Resolution Delay: {selectedTicket.Delay}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="detail-footer">
+                <button className="detail-primary-btn" onClick={() => setSelectedTicket(null)}>
+                  Close Details
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
       {/* Mobile Nav for responsiveness */}
       <div className="mobile-nav-v2">
         {navItems.map(item => (
@@ -830,7 +930,11 @@ function Home() {
             <div key={item.name} className={`mobile-nav-item ${activeTab === item.name ? 'active' : ''}`}
               onClick={() => {
                 setActiveTab(item.name);
-                if (item.name === 'Recent Records') fetchRecentTickets();
+                if (item.name === 'Recent Records') {
+                  fetchRecentTickets();
+                } else if (item.name === 'Dashboard') {
+                  setIsRecentOpen(false);
+                }
               }}>
               <i className={`fa-solid ${item.icon}`}></i>
               <span>{item.name}</span>
