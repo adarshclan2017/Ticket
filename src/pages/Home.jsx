@@ -648,6 +648,7 @@ function Home() {
                       <label>Remote Password <span className="optional-tag">(Optional)</span></label>
                       <input type="password" name="remotePassword" value={advancedSettings.remotePassword} onChange={handleAdvancedChange} placeholder="********" />
                     </div>
+                    
                   </div>
                 </div>
 
