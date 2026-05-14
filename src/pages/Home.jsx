@@ -313,6 +313,7 @@ function Home() {
   const navItems = [
     { name: 'Home', icon: 'fa-house' },
     { name: 'Agent Status', icon: 'fa-user-group', href: '/agent-status' },
+    { name: 'Pending Tickets', icon: 'fa-ticket', href: '/pending-tickets' },
     { name: 'Recent Records', icon: 'fa-clock-rotate-left' },
   ];
 
@@ -648,7 +649,7 @@ function Home() {
                       <label>Remote Password <span className="optional-tag">(Optional)</span></label>
                       <input type="password" name="remotePassword" value={advancedSettings.remotePassword} onChange={handleAdvancedChange} placeholder="********" />
                     </div>
-                    
+
                   </div>
                 </div>
 
@@ -744,7 +745,7 @@ function Home() {
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
-                      onClick={() => setSelectedTicket(ticket)}
+                      onClick={() => { setSelectedTicket(ticket); setIsRecentOpen(false); }}
                       style={{ cursor: 'pointer' }}
                     >
                       {/* Card Top Row */}
