@@ -13,8 +13,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'Support Ticket Update';
   const options = {
     body: data.body || 'Your ticket has been updated.',
-    icon: '/favicon.svg',
-    badge: '/favicon.svg',
+    icon: '/infolab.png',
+    badge: '/infolab.png',
     tag: 'ticket-notification',
     data: data.url || '/'
   };

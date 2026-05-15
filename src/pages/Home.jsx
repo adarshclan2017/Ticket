@@ -156,7 +156,7 @@ function Home() {
           const title = 'Notifications Enabled!';
           const options = {
             body: 'You will now receive updates about your tickets.',
-            icon: '/favicon.svg'
+            icon: '/infolab.png'
           };
 
           if (swRegistration) {
@@ -184,8 +184,8 @@ function Home() {
 
     const options = {
       body: body || 'Your support ticket has been created.',
-      icon: '/favicon.svg',
-      badge: '/favicon.svg',
+      icon: '/infolab.png',
+      badge: '/infolab.png',
       tag: 'ticket-submit',
       requireInteraction: true,
       vibrate: [200, 100, 200],
