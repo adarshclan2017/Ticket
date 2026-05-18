@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../apiConfig';
 import './Home.css';
 
 function Home() {
+  // Read role set by RoleSelect page
+  const userRole = localStorage.getItem('userRole') || 'employee'; // default to employee
+  const isCustomer = userRole === 'customer';
+  const navigate = useNavigate();
+
+  // Redirect employee to pending tickets immediately
+  React.useEffect(() => {
+    if (!isCustomer) {
+      navigate('/pending-tickets', { replace: true });
+    }
+  }, [isCustomer, navigate]);
   // State for form fields
   const [formData, setFormData] = useState({
     phoneNumber: '',
@@ -96,9 +108,12 @@ function Home() {
       try {
         const res = await fetch(`${API_BASE}/unniService.asmx/loadSupportType`);
         const text = await res.text();
-        // The API returns JSON wrapped in XML <string> tags
-        const match = text.match(/<string[^>]*>(.*)<\/string>/s);
-        const jsonStr = match ? match[1] : text;
+        
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(text, 'text/xml');
+        const stringNode = xmlDoc.getElementsByTagName('string')[0];
+        const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
+        
         const data = JSON.parse(jsonStr);
         setSupportTypes(data.SupportType || []);
       } catch (err) {
@@ -223,9 +238,10 @@ function Home() {
 
     try {
       // Build query parameters from form data and advanced settings
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const params = new URLSearchParams({
-        InternalUserID: '4',
-        UserName: advancedSettings.userName || 'Admin',
+        InternalUserID: userData.internal_user_id || '4',
+        UserName: advancedSettings.userName || userData.user_name || 'Admin',
         BranchID: advancedSettings.branchId || 'SYSTEL',
         BranchName: advancedSettings.branchName || 'INFOLAB TECHNOLOGIES HO',
         InstanceName: advancedSettings.instanceName || '',
@@ -243,8 +259,10 @@ function Home() {
       console.log('API Response:', text);
 
       // Parse JSON from XML <string> wrapper
-      const match = text.match(/<string[^>]*>(.*)<\/string>/s);
-      const jsonStr = match ? match[1] : text;
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(text, 'text/xml');
+      const stringNode = xmlDoc.getElementsByTagName('string')[0];
+      const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
 
       let result = null;
       try {
@@ -287,21 +305,20 @@ function Home() {
     setIsRecentLoading(true);
     setRecentError(null);
     try {
-      const res = await fetch(`${API_BASE}/unniService.asmx/loadRaisedSupportTickets?InternalUserID=4`);
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const internalUserId = userData.internal_user_id || '4';
+      const res = await fetch(`${API_BASE}/unniService.asmx/loadRaisedSupportTickets?InternalUserID=${internalUserId}`);
       const text = await res.text();
-      const match = text.match(/<string[^>]*>(.*)<\/string>/s);
-      const jsonStr = match ? match[1] : text;
+      
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(text, 'text/xml');
+      const stringNode = xmlDoc.getElementsByTagName('string')[0];
+      const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
+      
       const data = JSON.parse(jsonStr);
-      // Safely extract the first array found in the response, whatever key it uses
-      let tickets = [];
-      if (Array.isArray(data)) {
-        tickets = data;
-      } else if (data && typeof data === 'object') {
-        const arr = Object.values(data).find(v => Array.isArray(v));
-        tickets = arr || [];
-      }
-      console.log('Tickets received:', tickets);
-      setRecentTickets(tickets);
+      // SupportTickets is the expected key based on API tests
+      setRecentTickets(data.SupportTickets || []);
+      console.log('Tickets received:', data.SupportTickets);
     } catch (err) {
       console.error('Failed to load recent tickets:', err);
       setRecentError('Failed to load tickets. Please try again.');
@@ -310,12 +327,18 @@ function Home() {
     }
   };
 
-  const navItems = [
+  const allNavItems = [
     { name: 'Home', icon: 'fa-house' },
     { name: 'Agent Status', icon: 'fa-user-group', href: '/agent-status' },
     { name: 'Pending Tickets', icon: 'fa-ticket', href: '/pending-tickets' },
     { name: 'Recent Records', icon: 'fa-clock-rotate-left' },
   ];
+
+  // Employees see only Pending Tickets & Recent Records
+  // Customers see only Home & Agent Status
+  const navItems = isCustomer
+    ? allNavItems.filter(item => item.name !== 'Pending Tickets' && item.name !== 'Recent Records')
+    : allNavItems.filter(item => item.name !== 'Home' && item.name !== 'Agent Status');
 
   // Status badge config
   const getStatusConfig = (statusText) => {
@@ -551,20 +574,24 @@ function Home() {
               </div>
             </motion.div>
 
-            <div className="section-label-v2">Recent Activity</div>
-            <motion.div
-              className="history-link-card-v2"
-              variants={itemVariants}
-              whileHover={{ x: 5 }}
-              onClick={fetchRecentTickets}
-              style={{ cursor: 'pointer' }}
-            >
-              <div className="hist-left">
-                <i className="fa-solid fa-clock-rotate-left"></i>
-                <span>Recent Records</span>
-              </div>
-              <i className="fa-solid fa-chevron-right"></i>
-            </motion.div>
+            {!isCustomer && (
+              <>
+                <div className="section-label-v2">Recent Activity</div>
+                <motion.div
+                  className="history-link-card-v2"
+                  variants={itemVariants}
+                  whileHover={{ x: 5 }}
+                  onClick={fetchRecentTickets}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="hist-left">
+                    <i className="fa-solid fa-clock-rotate-left"></i>
+                    <span>Recent Records</span>
+                  </div>
+                  <i className="fa-solid fa-chevron-right"></i>
+                </motion.div>
+              </>
+            )}
 
 
           </div>
@@ -748,11 +775,10 @@ function Home() {
                       onClick={() => { setSelectedTicket(ticket); setIsRecentOpen(false); }}
                       style={{ cursor: 'pointer' }}
                     >
-                      {/* Card Top Row */}
-                      <div className="rtc-top">
+                      {/* Card Header */}
+                      <div className="rtc-header">
                         <div className="rtc-ticket-no">
-                          <i className="fa-solid fa-hashtag"></i>
-                          {ticket.TicketNo}
+                          <span className="hash-icon">#</span> {ticket.TicketNo}
                         </div>
                         <span
                           className="rtc-status-badge"
@@ -766,7 +792,7 @@ function Home() {
                       {/* Meta Grid */}
                       <div className="rtc-meta-grid">
                         <div className="rtc-meta-item">
-                          <i className="fa-solid fa-user" style={{ color: '#6366f1' }}></i>
+                          <i className="fa-solid fa-user" style={{ color: '#8b5cf6' }}></i>
                           <span>{ticket.UserName}</span>
                         </div>
                         <div className="rtc-meta-item">
@@ -783,22 +809,24 @@ function Home() {
                         </div>
                       </div>
 
-                      {/* Remarks */}
+                      {/* Remarks Section */}
                       {ticket.Remarks && (
-                        <div className="rtc-remarks">
-                          <i className="fa-solid fa-comment-dots"></i>
-                          <span>{ticket.Remarks}</span>
+                        <div className="rtc-remarks-box">
+                          <div className="rtc-remarks-icon">
+                            <i className="fa-solid fa-comment-dots"></i>
+                          </div>
+                          <div className="rtc-remarks-text">{ticket.Remarks}</div>
                         </div>
                       )}
 
-                      {/* Footer */}
+                      {/* Card Footer */}
                       <div className="rtc-footer">
                         <div className="rtc-footer-item">
                           <i className="fa-regular fa-calendar"></i>
                           <span>{ticket.CreationDate}</span>
                         </div>
                         {ticket.Delay && ticket.Delay !== '0' && (
-                          <div className="rtc-delay">
+                          <div className="rtc-duration-pill">
                             <i className="fa-solid fa-clock"></i>
                             <span>{ticket.Delay}</span>
                           </div>

@@ -4,16 +4,17 @@ import Home from './pages/Home';
 import AgentStatus from './pages/AgentStatus';
 import PendingTickets from './pages/PendingTickets';
 import Login from './pages/Login';
+import RoleSelect from './pages/RoleSelect';
 
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<RoleSelect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<Home />} />
         <Route path="/agent-status" element={<AgentStatus />} />
         <Route path="/pending-tickets" element={<PendingTickets />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

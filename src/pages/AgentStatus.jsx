@@ -49,8 +49,12 @@ function AgentStatus() {
     try {
       const res = await fetch(`${API_BASE}/unniService.asmx/loadAgentStatus?EntryDate=${date}`);
       const text = await res.text();
-      const match = text.match(/<string[^>]*>(.*)<\/string>/s);
-      const jsonStr = match ? match[1] : text;
+      
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(text, 'text/xml');
+      const stringNode = xmlDoc.getElementsByTagName('string')[0];
+      const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
+      
       const data = JSON.parse(jsonStr);
       setAgents(data.success && data.AgentStatus ? data.AgentStatus : []);
       setLastFetched(new Date().toLocaleTimeString());

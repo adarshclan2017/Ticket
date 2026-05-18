@@ -1135,94 +1135,114 @@
   box-shadow: 0 6px 24px rgba(0, 188, 212, 0.08);
 }
 
-/* Top Row: Ticket No + Status Badge */
-.rtc-top {
+/* Recent Grid Card (Updated UI) */
+.recent-ticket-card {
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+.recent-ticket-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border-color: #d1d5db;
+}
+
+.rtc-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .rtc-ticket-no {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: #111827;
   display: flex;
   align-items: center;
-  gap: 6px;
-  letter-spacing: 0.3px;
+  gap: 4px;
 }
 
-.rtc-ticket-no i {
-  font-size: 11px;
-  color: var(--text-secondary);
+.rtc-ticket-no .hash-icon {
+  color: #6b7280;
+  font-weight: 400;
 }
 
 .rtc-status-badge {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: 20px;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 50px;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-/* Meta Info Grid */
 .rtc-meta-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 16px;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 12px 16px;
 }
 
 .rtc-meta-item {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  font-weight: 500;
-  overflow: hidden;
+  gap: 10px;
+  min-width: 0;
 }
 
 .rtc-meta-item i {
-  font-size: 12px;
-  flex-shrink: 0;
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
 }
 
 .rtc-meta-item span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Remarks */
-.rtc-remarks {
+.rtc-remarks-box {
+  background: #f0f9ff;
+  border-left: 3px solid #0ea5e9;
+  border-radius: 4px 12px 12px 4px;
+  padding: 12px 16px;
   display: flex;
+  gap: 10px;
   align-items: flex-start;
-  gap: 8px;
-  background: #fff;
-  border-left: 3px solid var(--accent-color);
-  border-radius: 0 8px 8px 0;
-  padding: 8px 12px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.5;
 }
 
-.rtc-remarks i {
-  color: var(--accent-color);
+.rtc-remarks-icon {
+  color: #0ea5e9;
+  font-size: 14px;
   margin-top: 2px;
-  flex-shrink: 0;
 }
 
-/* Card Footer */
+.rtc-remarks-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  line-height: 1.4;
+}
+
 .rtc-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 10px;
+  margin-top: 4px;
+  padding-top: 12px;
   border-top: 1px solid #f1f5f9;
 }
 
@@ -1230,20 +1250,21 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  color: var(--text-secondary);
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
-.rtc-delay {
+.rtc-duration-pill {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   background: #fef3c7;
   color: #d97706;
+  padding: 5px 12px;
+  border-radius: 50px;
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 20px;
 }
 
 /* Panel Footer */
@@ -1515,8 +1536,3 @@
     padding-bottom: 32px;
   }
 }
-
-
-
-
-

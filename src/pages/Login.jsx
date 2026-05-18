@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { API_BASE } from '../apiConfig';
 import './Login.css';
 
 export default function Login() {
@@ -23,21 +24,40 @@ export default function Login() {
 
     setLoading(true);
     try {
-      // ── Replace this block with your real API call ──────────────────
-      await new Promise((res) => setTimeout(res, 1200)); // simulate network
-      // Example:
-      // const res = await fetch('/api/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ username, password }),
-      // });
-      // if (!res.ok) throw new Error('Invalid credentials');
-      // const data = await res.json();
-      // localStorage.setItem('token', data.token);
-      // ────────────────────────────────────────────────────────────────
-      setSuccess('Login successful! Redirecting…');
-      setTimeout(() => navigate('/home'), 900);
+      // Use the proxy endpoint defined in vite.config.js
+      const response = await fetch(`${API_BASE}/unniService.asmx/validateUserLogin?Username=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`);
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+
+      const text = await response.text();
+      
+      // Parse ASMX XML response
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(text, 'text/xml');
+      const stringNode = xmlDoc.getElementsByTagName('string')[0];
+
+      if (!stringNode) {
+        throw new Error('Invalid response from server.');
+      }
+
+      const jsonString = stringNode.textContent || stringNode.innerText;
+      const data = JSON.parse(jsonString);
+
+      if (data.responseMessage === 'Success') {
+        // Store user info for global use
+        const userData = data.user[0];
+        localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('isLoggedIn', 'true');
+        
+        setSuccess('Login successful! Redirecting…');
+        setTimeout(() => navigate('/home'), 900);
+      } else {
+        setError('Invalid username or password.');
+      }
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
@@ -173,6 +193,10 @@ export default function Login() {
           </button>
         </form>
 
+        <p className="login-footer-note">
+          <i className="fas fa-arrow-left" />
+          &nbsp;<Link to="/" style={{ color: 'var(--accent-color)', textDecoration: 'none', fontWeight: 600 }}>Back to role selection</Link>
+        </p>
 
       </div>
     </div>
