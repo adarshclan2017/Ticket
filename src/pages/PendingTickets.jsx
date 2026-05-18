@@ -89,6 +89,8 @@ export default function PendingTickets() {
   const [recentError, setRecentError] = useState(null);
   const [viewTicket, setViewTicket] = useState(null);
   const [draggedTicket, setDraggedTicket] = useState(null);
+  const [touchDraggedTicket, setTouchDraggedTicket] = useState(null);
+  const [touchCoords, setTouchCoords] = useState(null);
 
   const navItems = [
     { name: 'Home', icon: 'fa-house', href: '/home' },
@@ -802,6 +804,49 @@ export default function PendingTickets() {
                           e.currentTarget.classList.remove('dragging');
                           setDraggedTicket(null);
                         }}
+                        onTouchStart={(e) => {
+                          if (window.innerWidth > 768) return;
+                          const touch = e.touches[0];
+                          setDraggedTicket(ticket);
+                          setTouchDraggedTicket(ticket);
+                          setTouchCoords({ x: touch.clientX, y: touch.clientY });
+                        }}
+                        onTouchMove={(e) => {
+                          if (!touchDraggedTicket) return;
+                          const touch = e.touches[0];
+                          setTouchCoords({ x: touch.clientX, y: touch.clientY });
+                          
+                          // Highlight employee pill dropzone under touch finger
+                          const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                          const pill = element?.closest('.pt-drawer-employee-pill');
+                          
+                          document.querySelectorAll('.pt-drawer-employee-pill').forEach(el => {
+                            el.classList.remove('drag-active');
+                          });
+                          if (pill) {
+                            pill.classList.add('drag-active');
+                          }
+                        }}
+                        onTouchEnd={(e) => {
+                          if (!touchDraggedTicket) return;
+                          const touch = e.changedTouches[0];
+                          const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                          const pill = element?.closest('.pt-drawer-employee-pill');
+                          
+                          if (pill) {
+                            const agentName = pill.getAttribute('data-agent-name');
+                            if (agentName) {
+                              handleDropAssignment(touchDraggedTicket, agentName);
+                            }
+                          }
+                          
+                          setDraggedTicket(null);
+                          setTouchDraggedTicket(null);
+                          setTouchCoords(null);
+                          document.querySelectorAll('.pt-drawer-employee-pill').forEach(el => {
+                            el.classList.remove('drag-active');
+                          });
+                        }}
                         onClick={() => setViewTicket(ticket)}
                       >
                         <div className="pt-card-header">
@@ -1268,6 +1313,7 @@ export default function PendingTickets() {
                 <div
                   key={agent.InternalEmployeeID}
                   className="pt-drawer-employee-pill"
+                  data-agent-name={agent.EmployeeName}
                   onDragOver={(e) => {
                     e.preventDefault();
                     e.currentTarget.classList.add('drag-active');
@@ -1297,14 +1343,48 @@ export default function PendingTickets() {
       <AnimatePresence>
         {toast && (
           <motion.div className="pt-toast"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 24 }}>
+            initial={{ opacity: 0, x: "-50%", y: 24 }}
+            animate={{ opacity: 1, x: "-50%", y: 0 }}
+            exit={{ opacity: 0, x: "-50%", y: 24 }}
+            style={{ left: '50%' }}>
             <i className="fa-solid fa-circle-check"></i>
             {toast}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Touch Drag Ghost Card */}
+      {touchDraggedTicket && touchCoords && (
+        <div 
+          className="pt-card touch-ghost-card"
+          style={{
+            position: 'fixed',
+            left: `${touchCoords.x - 80}px`,
+            top: `${touchCoords.y - 60}px`,
+            width: '160px',
+            opacity: 0.85,
+            pointerEvents: 'none',
+            zIndex: 99999,
+            transform: 'scale(0.95) rotate(3deg)',
+            boxShadow: '0 12px 24px rgba(0,0,0,0.18)',
+            border: '2px solid #00bcd4',
+            background: '#fff',
+            borderRadius: '12px',
+            padding: '10px'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 800 }}>#{touchDraggedTicket.TicketNo}</span>
+            <span style={{ fontSize: '8px', padding: '2px 5px', borderRadius: '4px', background: '#e0f2fe', color: '#0284c7', fontWeight: 800 }}>
+              {touchDraggedTicket.Type}
+            </span>
+          </div>
+          <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>
+            <i className="fa-solid fa-people-arrows" style={{ color: '#00bcd4', marginRight: '6px' }}></i>
+            Assigning ticket...
+          </div>
+        </div>
+      )}
 
       {/* View Ticket Data Modal */}
       <AnimatePresence>
