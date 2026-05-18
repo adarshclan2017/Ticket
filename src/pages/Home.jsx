@@ -863,6 +863,7 @@ function Home() {
               exit="hidden"
               onClick={(e) => e.stopPropagation()}
             >
+              <div className="detail-drag-handle"></div>
               <div className="detail-header">
                 <div className="detail-header-left">
                   <div className="detail-status-pill" style={{

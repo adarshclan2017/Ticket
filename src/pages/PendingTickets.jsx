@@ -720,35 +720,15 @@ export default function PendingTickets() {
             ))}
           </div>
         ) : (
-          /* ── MY TASKS: Kanban board (one column per agent) ── */
-          <div className="pt-kanban-board">
+          /* ── MY TASKS: Responsive Grid Layout Grouped by Agent ── */
+          <div className="pt-assigned-grid-section" style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
             {filtered.map((group) => (
-              <div
-                key={group.agentName}
-                className="pt-kanban-column"
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.currentTarget.classList.add('drag-over');
-                }}
-                onDragLeave={(e) => {
-                  e.currentTarget.classList.remove('drag-over');
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.currentTarget.classList.remove('drag-over');
-                  try {
-                    const ticketData = e.dataTransfer.getData('ticket');
-                    if (ticketData) {
-                      const ticket = JSON.parse(ticketData);
-                      handleDropAssignment(ticket, group.agentName);
-                    }
-                  } catch (err) {
-                    console.error('Drop error:', err);
-                  }
-                }}
+              <div 
+                key={group.agentName} 
+                className="pt-agent-group-grid-container"
               >
-                {/* Column Header */}
-                <div className="pt-kanban-col-header">
+                {/* Agent Header */}
+                <div className="pt-kanban-col-header" style={{ marginBottom: '16px', borderRadius: '16px', border: '2px solid #e2e8f0' }}>
                   <div className="pt-kanban-avatar">
                     {group.agentName.charAt(0).toUpperCase()}
                   </div>
@@ -764,13 +744,44 @@ export default function PendingTickets() {
                   </div>
                 </div>
 
-                {/* Cards List — vertical stack */}
+                {/* Grid Wrapper with drag/drop handlers */}
                 <motion.div
-                  className="pt-kanban-cards-list"
+                  className="pt-cards-grid"
                   variants={containerVariants}
                   initial="hidden"
                   animate="visible"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.add('drag-over');
+                  }}
+                  onDragLeave={(e) => {
+                    e.currentTarget.classList.remove('drag-over');
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.remove('drag-over');
+                    try {
+                      const ticketData = e.dataTransfer.getData('ticket');
+                      if (ticketData) {
+                        const ticket = JSON.parse(ticketData);
+                        handleDropAssignment(ticket, group.agentName);
+                      }
+                    } catch (err) {
+                      console.error('Drop error:', err);
+                    }
+                  }}
+                  style={{
+                    padding: '8px',
+                    borderRadius: '16px',
+                    transition: 'all 0.2s ease',
+                    minHeight: '100px'
+                  }}
                 >
+                  {group.tickets.length === 0 && (
+                    <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px', border: '2px dashed #cbd5e1', borderRadius: '12px', color: '#94a3b8', fontSize: '13px', fontWeight: 600 }}>
+                      Drop ticket here to assign to {group.agentName}
+                    </div>
+                  )}
                   {group.tickets.map((ticket) => {
                     const isAssigned = (ticket.CallStatus === '1' || ticket.CallStatus === 'Assigned') || assignedIds.has(ticket.InternalTicketID);
                     const typeStyle = getTypeStyle(ticket.Type);
@@ -1307,6 +1318,7 @@ export default function PendingTickets() {
               exit="hidden"
               onClick={(e) => e.stopPropagation()}
             >
+              <div className="detail-drag-handle"></div>
               <div className="detail-header">
                 <div className="detail-header-left">
                   <div className="detail-status-pill" style={{
