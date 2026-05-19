@@ -62,18 +62,33 @@ function Home() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { duration: 0.6, staggerChildren: 0.1 }
+      transition: { staggerChildren: 0.08, delayChildren: 0.05 }
     }
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { type: 'spring', damping: 20, stiffness: 140 } 
+    }
   };
 
   const modalVariants = {
-    hidden: { opacity: 0, scale: 0.9, y: 20 },
-    visible: { opacity: 1, scale: 1, y: 0 }
+    hidden: { opacity: 0, scale: 0.94, y: 25 },
+    visible: { 
+      opacity: 1, 
+      scale: 1, 
+      y: 0, 
+      transition: { type: 'spring', damping: 24, stiffness: 280 } 
+    },
+    exit: { 
+      opacity: 0, 
+      scale: 0.94, 
+      y: 20, 
+      transition: { duration: 0.18 } 
+    }
   };
 
   // Handlers
@@ -455,9 +470,9 @@ function Home() {
             </motion.div>
 
             <form onSubmit={handleSubmit} className="vertical-form-flow">
-              <div className="section-label-v2">Core Incident Details</div>
+              <motion.div className="section-label-v2" variants={itemVariants}>Core Incident Details</motion.div>
 
-              <div className="input-group-v2">
+              <motion.div className="input-group-v2" variants={itemVariants}>
                 <div className="input-row">
                   <div className="input-box-v2">
                     <div className="input-icon-v2">
@@ -541,7 +556,7 @@ function Home() {
                     ></textarea>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               <motion.button
                 type="submit"
@@ -560,7 +575,7 @@ function Home() {
 
           {/* Sidebar Area within Grid */}
           <div className="form-side-cards">
-            <div className="section-label-v2">System Environment</div>
+            <motion.div className="section-label-v2" variants={itemVariants}>System Environment</motion.div>
             <motion.div
               className="advanced-settings-card-v2"
               variants={itemVariants}

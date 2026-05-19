@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { API_BASE } from '../apiConfig';
 import './Login.css';
 
@@ -24,7 +25,6 @@ export default function Login() {
 
     setLoading(true);
     try {
-      // Use the proxy endpoint defined in vite.config.js
       const response = await fetch(`${API_BASE}/unniService.asmx/validateUserLogin?Username=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`);
       
       if (!response.ok) {
@@ -33,7 +33,6 @@ export default function Login() {
 
       const text = await response.text();
       
-      // Parse ASMX XML response
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(text, 'text/xml');
       const stringNode = xmlDoc.getElementsByTagName('string')[0];
@@ -46,7 +45,6 @@ export default function Login() {
       const data = JSON.parse(jsonString);
 
       if (data.responseMessage === 'Success') {
-        // Store user info for global use
         const userData = data.user[0];
         localStorage.setItem('userData', JSON.stringify(userData));
         localStorage.setItem('isLoggedIn', 'true');
@@ -64,12 +62,40 @@ export default function Login() {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        damping: 18,
+        stiffness: 130
+      }
+    }
+  };
+
   return (
     <div className="login-page">
-      <div className="login-card">
-
+      <motion.div 
+        className="login-card"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {/* Brand */}
-        <div className="login-brand">
+        <motion.div className="login-brand" variants={itemVariants}>
           <div className="login-logo-icon">
             <i className="fas fa-headset"></i>
           </div>
@@ -77,36 +103,38 @@ export default function Login() {
             <span className="login-brand-name">SupportDesk</span>
             <span className="login-brand-sub">Ticket Management System</span>
           </div>
-        </div>
-
-
+        </motion.div>
 
         {/* Heading */}
-        <div className="login-heading">
+        <motion.div className="login-heading" variants={itemVariants}>
           <h1>Welcome back</h1>
-        </div>
+        </motion.div>
 
-        <div className="login-divider"></div>
+        <motion.div className="login-divider" variants={itemVariants}></motion.div>
 
         {/* Status messages */}
         {error && (
-          <div className="login-error-msg" style={{ marginBottom: 14 }}>
+          <motion.div className="login-error-msg" style={{ marginBottom: 14 }} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
             <i className="fas fa-exclamation-circle"></i>
             {error}
-          </div>
+          </motion.div>
         )}
         {success && (
-          <div className="login-success-msg" style={{ marginBottom: 14 }}>
+          <motion.div className="login-success-msg" style={{ marginBottom: 14 }} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
             <i className="fas fa-check-circle"></i>
             {success}
-          </div>
+          </motion.div>
         )}
 
         {/* Form */}
-        <form className="login-form" onSubmit={handleSubmit} id="login-form">
-
+        <motion.form 
+          className="login-form" 
+          onSubmit={handleSubmit} 
+          id="login-form"
+          variants={containerVariants}
+        >
           {/* Username */}
-          <div>
+          <motion.div variants={itemVariants}>
             <span className="login-field-label">Username</span>
             <div className="login-input-box">
               <span className="login-input-icon">
@@ -122,10 +150,10 @@ export default function Login() {
                 autoFocus
               />
             </div>
-          </div>
+          </motion.div>
 
           {/* Password */}
-          <div>
+          <motion.div variants={itemVariants}>
             <span className="login-field-label">Password</span>
             <div className="login-input-box">
               <span className="login-input-icon">
@@ -149,10 +177,10 @@ export default function Login() {
                 <i className={showPass ? 'fas fa-eye-slash' : 'fas fa-eye'}></i>
               </button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Remember + Forgot */}
-          <div className="login-options-row">
+          <motion.div className="login-options-row" variants={itemVariants}>
             <label className="login-remember">
               <input
                 id="login-remember"
@@ -170,14 +198,17 @@ export default function Login() {
             >
               Forgot password?
             </button>
-          </div>
+          </motion.div>
 
           {/* Submit */}
-          <button
+          <motion.button
             type="submit"
             className="login-submit-btn"
             id="login-submit"
             disabled={loading}
+            variants={itemVariants}
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.985 }}
           >
             {loading ? (
               <>
@@ -190,15 +221,14 @@ export default function Login() {
                 Sign In
               </>
             )}
-          </button>
-        </form>
+          </motion.button>
+        </motion.form>
 
-        <p className="login-footer-note">
+        <motion.p className="login-footer-note" variants={itemVariants}>
           <i className="fas fa-arrow-left" />
           &nbsp;<Link to="/" style={{ color: 'var(--accent-color)', textDecoration: 'none', fontWeight: 600 }}>Back to role selection</Link>
-        </p>
-
-      </div>
+        </motion.p>
+      </motion.div>
     </div>
   );
 }

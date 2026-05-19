@@ -578,9 +578,15 @@ export default function PendingTickets() {
       )}
 
       {/* ── Main ── */}
-      <main className="pt-main">
+      <motion.main 
+        className="pt-main"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        key={viewType}
+      >
         {/* Header */}
-        <div className="pt-header">
+        <motion.div className="pt-header" variants={cardVariants}>
           <div className="pt-header-left">
             <div className="pt-header-icon">
               <i className={`fa-solid ${viewType === 'pending' ? 'fa-ticket' : viewType === 'l3' ? 'fa-angles-up' : 'fa-user-check'}`}></i>
@@ -626,32 +632,47 @@ export default function PendingTickets() {
               {!loading ? 'Refresh' : 'Loading...'}
             </button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Stats */}
-        <div className="pt-stats-row">
-          <div className="pt-stat-card total">
+        <motion.div className="pt-stats-row" variants={containerVariants}>
+          <motion.div 
+            className="pt-stat-card total" 
+            variants={cardVariants}
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
             <i className="fa-solid fa-layer-group"></i>
             <div>
               <span className="pt-stat-num">{totalCount}</span>
               <span className="pt-stat-label">Total Tickets</span>
             </div>
-          </div>
-          <div className="pt-stat-card pending">
+          </motion.div>
+          <motion.div 
+            className="pt-stat-card pending" 
+            variants={cardVariants}
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
             <i className="fa-solid fa-hourglass-half"></i>
             <div>
               <span className="pt-stat-num">{pendingCount}</span>
               <span className="pt-stat-label">Unassigned</span>
             </div>
-          </div>
-          <div className="pt-stat-card assigned">
+          </motion.div>
+          <motion.div 
+            className="pt-stat-card assigned" 
+            variants={cardVariants}
+            whileHover={{ scale: 1.03, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
             <i className="fa-solid fa-user-check"></i>
             <div>
               <span className="pt-stat-num">{assignedCount}</span>
               <span className="pt-stat-label">Assigned</span>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Toolbar */}
         <div className="pt-toolbar">
@@ -997,7 +1018,7 @@ export default function PendingTickets() {
             Showing <strong>{filtered.length}</strong> of <strong>{totalCount}</strong> tickets
           </div>
         )}
-      </main>
+      </motion.main>
 
       {/* ── Mobile Nav (hidden for employees) ── */}
       {!isEmployee && (

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import './RoleSelect.css';
 
 export default function RoleSelect() {
@@ -32,6 +33,31 @@ export default function RoleSelect() {
     e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
   };
 
+  // Entry animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 25 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        damping: 18,
+        stiffness: 120
+      }
+    }
+  };
+
   return (
     <div className="role-page" onMouseMove={handlePageMouseMove}>
       {/* Animated background blobs with parallax wrapper */}
@@ -45,9 +71,14 @@ export default function RoleSelect() {
         <div className="role-blob role-blob-3" />
       </div>
 
-      <div className="role-container">
+      <motion.div 
+        className="role-container"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {/* Brand Header */}
-        <div className="role-brand">
+        <motion.div className="role-brand" variants={itemVariants}>
           <div className="role-brand-icon">
             <i className="fa-solid fa-headset" />
           </div>
@@ -55,21 +86,24 @@ export default function RoleSelect() {
             <span className="role-brand-name">Inpack</span>
             <span className="role-brand-sub">Ticket Management System</span>
           </div>
-        </div>
+        </motion.div>
 
         {/* Heading */}
-        <div className="role-heading">
+        <motion.div className="role-heading" variants={itemVariants}>
           <h1>Select Your Role</h1>
-        </div>
+        </motion.div>
 
         {/* Role Cards */}
         <div className="role-cards">
           {/* Employee Card */}
-          <button
+          <motion.button
             className="role-card role-card--employee"
             id="role-select-employee"
             onClick={handleEmployee}
             onMouseMove={handleCardMouseMove}
+            variants={itemVariants}
+            whileHover={{ y: -6, scale: 1.015 }}
+            whileTap={{ scale: 0.985 }}
           >
             <div className="role-card-glow role-card-glow--employee" />
             <div className="role-card-icon-wrap role-icon-emp">
@@ -86,14 +120,17 @@ export default function RoleSelect() {
               <i className="fa-solid fa-lock" />
               Login Required
             </div>
-          </button>
+          </motion.button>
 
           {/* Customer Card */}
-          <button
+          <motion.button
             className="role-card role-card--customer"
             id="role-select-customer"
             onClick={handleCustomer}
             onMouseMove={handleCardMouseMove}
+            variants={itemVariants}
+            whileHover={{ y: -6, scale: 1.015 }}
+            whileTap={{ scale: 0.985 }}
           >
             <div className="role-card-glow role-card-glow--customer" />
             <div className="role-card-icon-wrap role-icon-cust">
@@ -110,14 +147,14 @@ export default function RoleSelect() {
               <i className="fa-solid fa-bolt" />
               Instant Access
             </div>
-          </button>
+          </motion.button>
         </div>
 
-        <p className="role-footer">
+        <motion.p className="role-footer" variants={itemVariants}>
           <i className="fa-solid fa-shield-halved" />
           &nbsp;Your session is secured and private
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
     </div>
   );
 }
