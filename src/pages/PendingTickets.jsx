@@ -76,7 +76,7 @@ export default function PendingTickets() {
   const [assignForm, setAssignForm] = useState(defaultAssignForm);
   const [isConfirming, setIsConfirming] = useState(false);
   const [agents, setAgents] = useState([]);
-  const [viewType, setViewType] = useState('assigned'); // 'assigned' | 'pending'
+  const [viewType, setViewType] = useState('assigned'); // 'assigned' | 'pending' | 'l3'
   const [isEmpDropdownOpen, setIsEmpDropdownOpen] = useState(false);
   const [isTlDropdownOpen, setIsTlDropdownOpen] = useState(false);
   const empDropdownRef = React.useRef(null);
@@ -252,9 +252,12 @@ export default function PendingTickets() {
       const internalEntryFromId = '11';
 
       // Switch API based on viewType
-      const endpoint = viewType === 'pending'
-        ? 'loadRaisedSupportTicketsForTL'
-        : 'loadAgentsTickets';
+      let endpoint = 'loadAgentsTickets';
+      if (viewType === 'pending') {
+        endpoint = 'loadRaisedSupportTicketsForTL';
+      } else if (viewType === 'l3') {
+        endpoint = 'loadLevel3Tickets';
+      }
 
       const res = await fetch(
         `${API_BASE}/unniService.asmx/${endpoint}?InternalEmployeeID=${internalEmployeeId}&InternalEntryFromID=${internalEntryFromId}`
@@ -270,12 +273,13 @@ export default function PendingTickets() {
 
       if (responseData.success) {
         let groups = [];
-        if (viewType === 'pending') {
-          // Group unassigned tickets
-          const raw = responseData.SupportTickets || [];
+        if (viewType === 'pending' || viewType === 'l3') {
+          // Group unassigned or level 3 tickets
+          const raw = responseData.SupportTickets || responseData.data || [];
+          const list = Array.isArray(raw) ? raw : (Object.values(raw).flat() || []);
           groups = [{
-            agentName: 'Pending Assignment',
-            tickets: raw.map(t => ({ ...t, CreationDate: t.RaisedTime || t.CreationDate }))
+            agentName: viewType === 'pending' ? 'Pending Assignment' : 'L3 Requests',
+            tickets: list.map(t => ({ ...t, CreationDate: t.RaisedTime || t.CreationDate }))
           }];
         } else {
           // Grouped by agent from API
@@ -436,6 +440,46 @@ export default function PendingTickets() {
     setTimeout(() => setToast(null), 3200);
   };
 
+  const handleUpdateStatus = async (e, ticket, action) => {
+    e.stopPropagation();
+    try {
+      setLoading(true);
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const internalUserId = userData.internal_user_id || '4';
+
+      const params = new URLSearchParams({
+        InternalTicketID: ticket.InternalTicketID,
+        Action: action,
+        InternalUserID: internalUserId,
+        Rating: '',
+        RatingRemarks: '',
+      });
+
+      const res = await fetch(`${API_BASE}/unniService.asmx/SaveTicketStatus?${params.toString()}`);
+      const text = await res.text();
+
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(text, 'text/xml');
+      const stringNode = xmlDoc.getElementsByTagName('string')[0];
+      const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
+
+      let result = null;
+      try {
+        result = JSON.parse(jsonStr);
+      } catch {
+        result = { success: false, message: jsonStr };
+      }
+
+      showToast(`Status updated to ${action} for Ticket #${ticket.TicketNo}`);
+      fetchTickets(); // Refresh list to reflect changes
+    } catch (err) {
+      console.error('Failed to update status:', err);
+      showToast(`❌ Failed to update status: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filtered = useMemo(() => {
     let processedGroups = tickets.map(group => {
       let result = group.tickets;
@@ -516,7 +560,16 @@ export default function PendingTickets() {
             ))}
           </nav>
           <div className="pt-sidebar-footer">
-            <a href="/home" className="pt-nav-item" style={{ textDecoration: 'none' }}>
+            <a
+              href="/"
+              onClick={() => {
+                localStorage.removeItem('userData');
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userRole');
+              }}
+              className="pt-nav-item"
+              style={{ textDecoration: 'none' }}
+            >
               <i className="fa-solid fa-right-from-bracket"></i>
               {!isSidebarCollapsed && <span>Logout</span>}
             </a>
@@ -530,11 +583,11 @@ export default function PendingTickets() {
         <div className="pt-header">
           <div className="pt-header-left">
             <div className="pt-header-icon">
-              <i className={`fa-solid ${viewType === 'pending' ? 'fa-ticket' : 'fa-user-check'}`}></i>
+              <i className={`fa-solid ${viewType === 'pending' ? 'fa-ticket' : viewType === 'l3' ? 'fa-angles-up' : 'fa-user-check'}`}></i>
             </div>
             <div>
-              <h1>{viewType === 'pending' ? 'Pending Tickets' : 'My Tasks'}</h1>
-              <p>{viewType === 'pending' ? 'Unassigned support requests' : 'Tickets assigned to you'}</p>
+              <h1>{viewType === 'pending' ? 'Pending Tickets' : viewType === 'l3' ? 'L3 Requests' : 'My Tasks'}</h1>
+              <p>{viewType === 'pending' ? 'Unassigned support requests' : viewType === 'l3' ? 'Level 3 escalated tickets' : 'Tickets assigned to you'}</p>
             </div>
           </div>
 
@@ -552,6 +605,13 @@ export default function PendingTickets() {
             >
               <i className="fa-solid fa-clock-rotate-left"></i>
               Pending
+            </button>
+            <button
+              className={`pt-toggle-btn ${viewType === 'l3' ? 'active' : ''}`}
+              onClick={() => setViewType('l3')}
+            >
+              <i className="fa-solid fa-angles-up"></i>
+              L3 Request
             </button>
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -645,7 +705,7 @@ export default function PendingTickets() {
         )}
 
         {/* Cards */}
-        {!loading && !error && filtered.length > 0 && (viewType === 'pending' ? (
+        {!loading && !error && filtered.length > 0 && (viewType === 'pending' || viewType === 'l3' ? (
           /* ── PENDING: original auto-fill grid layout ── */
           <div className="pt-pending-section">
             {filtered.map((group) => (
@@ -703,10 +763,26 @@ export default function PendingTickets() {
                           <div className="pt-card-serial-small">SN: {ticket.SerialNo}</div>
                         </div>
                         {isAssigned ? (
-                          <div className="pt-card-assigned-pill">
-                            <div className="pt-assigned-avatar">{ticket.AssignedTo?.charAt(0) || 'A'}</div>
-                            <div className="pt-assigned-details"><span>Assigned to</span><strong>{ticket.AssignedTo}</strong></div>
-                          </div>
+                          <>
+                            <div className="pt-card-assigned-pill">
+                              <div className="pt-assigned-avatar">{ticket.AssignedTo?.charAt(0) || 'A'}</div>
+                              <div className="pt-assigned-details"><span>Assigned to</span><strong>{ticket.AssignedTo}</strong></div>
+                            </div>
+                            <div className="pt-card-actions-row">
+                              <button className="pt-action-btn play" onClick={(e) => handleUpdateStatus(e, ticket, 'PLAY')} title="Start Task">
+                                <i className="fa-solid fa-play"></i><span>Play</span>
+                              </button>
+                              <button className="pt-action-btn pause" onClick={(e) => handleUpdateStatus(e, ticket, 'PAUSE')} title="Pause Task">
+                                <i className="fa-solid fa-pause"></i><span>Pause</span>
+                              </button>
+                              <button className="pt-action-btn done" onClick={(e) => handleUpdateStatus(e, ticket, 'DONE')} title="Complete Task">
+                                <i className="fa-solid fa-check"></i><span>Done</span>
+                              </button>
+                              <button className="pt-action-btn l3" onClick={(e) => handleUpdateStatus(e, ticket, 'L3')} title="Request L3 Support">
+                                <i className="fa-solid fa-angles-up"></i><span>L3</span>
+                              </button>
+                            </div>
+                          </>
                         ) : (
                           <motion.button className="pt-card-assign-btn" onClick={(e) => { e.stopPropagation(); openAssignModal(ticket); }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                             <i className="fa-solid fa-user-plus"></i><span>Assign Task</span>
@@ -867,13 +943,29 @@ export default function PendingTickets() {
                           </div>
 
                           {isAssigned ? (
-                            <div className="pt-card-assigned-pill">
-                              <div className="pt-assigned-avatar">{ticket.AssignedTo?.charAt(0) || 'A'}</div>
-                              <div className="pt-assigned-details">
-                                <span>Assigned to</span>
-                                <strong>{ticket.AssignedTo}</strong>
+                            <>
+                              <div className="pt-card-assigned-pill">
+                                <div className="pt-assigned-avatar">{ticket.AssignedTo?.charAt(0) || 'A'}</div>
+                                <div className="pt-assigned-details">
+                                  <span>Assigned to</span>
+                                  <strong>{ticket.AssignedTo}</strong>
+                                </div>
                               </div>
-                            </div>
+                              <div className="pt-card-actions-row">
+                                <button className="pt-action-btn play" onClick={(e) => handleUpdateStatus(e, ticket, 'PLAY')} title="Start Task">
+                                  <i className="fa-solid fa-play"></i><span>Play</span>
+                                </button>
+                                <button className="pt-action-btn pause" onClick={(e) => handleUpdateStatus(e, ticket, 'PAUSE')} title="Pause Task">
+                                  <i className="fa-solid fa-pause"></i><span>Pause</span>
+                                </button>
+                                <button className="pt-action-btn done" onClick={(e) => handleUpdateStatus(e, ticket, 'DONE')} title="Complete Task">
+                                  <i className="fa-solid fa-check"></i><span>Done</span>
+                                </button>
+                                <button className="pt-action-btn l3" onClick={(e) => handleUpdateStatus(e, ticket, 'L3')} title="Request L3 Support">
+                                  <i className="fa-solid fa-angles-up"></i><span>L3</span>
+                                </button>
+                              </div>
+                            </>
                           ) : (
                             <motion.button
                               className="pt-card-assign-btn"
@@ -1252,7 +1344,7 @@ export default function PendingTickets() {
 
       {/* Drag & Drop Drawer Dropzone */}
       <AnimatePresence>
-        {draggedTicket && viewType !== 'pending' && (
+        {draggedTicket && viewType !== 'pending' && viewType !== 'l3' && (
           <motion.div
             className="pt-drag-drop-drawer"
             initial={{ y: 100, opacity: 0, x: '-50%' }}

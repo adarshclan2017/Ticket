@@ -176,7 +176,19 @@ function AgentStatus() {
           ))}
         </nav>
         <div className="sidebar-footer">
-          <div className="nav-item"><i className="fa-solid fa-right-from-bracket"></i>{!isSidebarCollapsed && <span>Logout</span>}</div>
+          <a
+            href="/"
+            onClick={() => {
+              localStorage.removeItem('userData');
+              localStorage.removeItem('isLoggedIn');
+              localStorage.removeItem('userRole');
+            }}
+            className="nav-item"
+            style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', width: '100%' }}
+          >
+            <i className="fa-solid fa-right-from-bracket"></i>
+            {!isSidebarCollapsed && <span>Logout</span>}
+          </a>
         </div>
       </aside>
 

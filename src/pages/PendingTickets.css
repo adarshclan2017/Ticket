@@ -2782,3 +2782,92 @@
 .pt-kanban-board:not(.panning) {
   cursor: grab;
 }
+
+/* ─── L3 Ticket Actions Button Tray ────────────────── */
+.pt-card-actions-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.pt-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: none;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pt-action-btn i {
+  font-size: 12px;
+}
+
+/* Play Button */
+.pt-action-btn.play {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.2);
+}
+.pt-action-btn.play:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  filter: brightness(1.05);
+}
+
+/* Pause Button */
+.pt-action-btn.pause {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.2);
+}
+.pt-action-btn.pause:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+  filter: brightness(1.05);
+}
+
+/* Done Button */
+.pt-action-btn.done {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  box-shadow: 0 3px 8px rgba(14, 165, 233, 0.2);
+}
+.pt-action-btn.done:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35);
+  filter: brightness(1.05);
+}
+
+/* L3 Button */
+.pt-action-btn.l3 {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  box-shadow: 0 3px 8px rgba(139, 92, 246, 0.2);
+}
+.pt-action-btn.l3:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+  filter: brightness(1.05);
+}
+
+/* Mobile responsiveness for buttons */
+@media (max-width: 768px) {
+  .pt-card-actions-row {
+    gap: 4px;
+  }
+  .pt-action-btn {
+    font-size: 9.5px;
+    padding: 6px 2px;
+    border-radius: 8px;
+  }
+  .pt-action-btn i {
+    font-size: 10px;
+  }
+}

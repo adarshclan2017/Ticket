@@ -52,15 +52,14 @@ export default function RoleSelect() {
             <i className="fa-solid fa-headset" />
           </div>
           <div className="role-brand-text">
-            <span className="role-brand-name">SupportDesk</span>
+            <span className="role-brand-name">Inpack</span>
             <span className="role-brand-sub">Ticket Management System</span>
           </div>
         </div>
 
         {/* Heading */}
         <div className="role-heading">
-          <h1>Who are you?</h1>
-          <p>Select your role to continue to the right experience</p>
+          <h1>Select Your Role</h1>
         </div>
 
         {/* Role Cards */}
