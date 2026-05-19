@@ -592,7 +592,7 @@ export default function PendingTickets() {
               <i className={`fa-solid ${viewType === 'pending' ? 'fa-ticket' : viewType === 'l3' ? 'fa-angles-up' : 'fa-user-check'}`}></i>
             </div>
             <div>
-              <h1>{viewType === 'pending' ? 'Pending Tickets' : viewType === 'l3' ? 'L3 Requests' : 'My Tasks'}</h1>
+              <h1>{viewType === 'pending' ? 'Pending Tickets' : viewType === 'l3' ? 'L3 Requests' : 'My Ticket'}</h1>
               <p>{viewType === 'pending' ? 'Unassigned support requests' : viewType === 'l3' ? 'Level 3 escalated tickets' : 'Tickets assigned to you'}</p>
             </div>
           </div>
@@ -603,7 +603,7 @@ export default function PendingTickets() {
               onClick={() => setViewType('assigned')}
             >
               <i className="fa-solid fa-user-check"></i>
-              My Tasks
+              My Ticket
             </button>
             <button
               className={`pt-toggle-btn ${viewType === 'pending' ? 'active' : ''}`}
