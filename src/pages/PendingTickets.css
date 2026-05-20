@@ -813,6 +813,13 @@
   width: fit-content;
 }
 
+.pt-card-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .pt-card-status.pending {
   color: #b45309;
   background: #fffbeb;
@@ -848,14 +855,15 @@
 
 .pt-card-meta-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 12px;
 }
 
 .pt-card-meta-item {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 
 .pt-card-meta-item i {
@@ -886,6 +894,41 @@
   line-height: 1.3;
   word-break: break-word;
   /* Prevent overlaying by wrapping */
+}
+
+.pt-priority-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.pt-priority-badge.high {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+}
+
+.pt-priority-badge.mid {
+  color: #ea580c;
+  background: #fff7ed;
+  border: 1px solid #ffedd5;
+}
+
+.pt-priority-badge.low {
+  color: #16a34a;
+  background: #f0fdf4;
+  border: 1px solid #dcfce7;
+}
+
+.pt-priority-badge.unknown {
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .pt-card-remarks {

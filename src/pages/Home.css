@@ -998,9 +998,14 @@
   }
 }
 
-/* ─────────────────────────────────────────────
-   Recent Records Slide-in Drawer Panel
-   ───────────────────────────────────────────── */
+/* Recent Backdrop (dark dim backdrop for slide-in panel without blurring sibling panel) */
+.recent-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  z-index: 2050;
+}
+
 .recent-panel {
   position: fixed;
   top: 0;
@@ -1014,6 +1019,10 @@
   flex-direction: column;
   box-shadow: -20px 0 60px rgba(0, 0, 0, 0.12);
   border-left: 1px solid #e2e8f0;
+  /* GPU layer promotion to avoid Blink/WebKit compositing blur issues */
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  will-change: transform;
 }
 
 @media (max-width: 540px) {

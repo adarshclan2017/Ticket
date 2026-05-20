@@ -54,6 +54,14 @@ function formatDate(dateStr) {
   });
 }
 
+function getPriorityStyle(priorityValue) {
+  const val = String(priorityValue || '').trim().toLowerCase();
+  if (val === '1' || val === 'high') return { color: '#ef4444', text: 'High', class: 'high' };
+  if (val === '2' || val === 'med' || val === 'mid' || val === 'medium') return { color: '#f97316', text: 'Mid', class: 'mid' };
+  if (val === '3' || val === 'low') return { color: '#10b981', text: 'Low', class: 'low' };
+  return { color: '#64748b', text: priorityValue || '—', class: 'unknown' };
+}
+
 const defaultAssignForm = {
   employeeId: '',
   tlId: '',
@@ -248,8 +256,8 @@ export default function PendingTickets() {
     setError(null);
     try {
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const internalEmployeeId = userData.internal_employee_id || '82';
-      const internalEntryFromId = '11';
+      const internalEmployeeId = userData.internal_employee_id || '10';
+      const internalEntryFromId = userData.internal_employee_id || '0';
 
       // Switch API based on viewType
       let endpoint = 'loadAgentsTickets';
@@ -328,7 +336,7 @@ export default function PendingTickets() {
   };
 
   // Priority label → numeric value
-  const priorityMap = { High: 1, Med: 2, Low: 3 };
+  const priorityMap = { High: 1, Mid: 2, Low: 3 };
 
   // Confirm assignment — calls SaveSupportTicketAssigningByTL API
   const handleConfirm = async () => {
@@ -398,7 +406,7 @@ export default function PendingTickets() {
     try {
       setLoading(true);
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const tlId = userData.internal_employee_id || '82';
+      const tlId = userData.internal_employee_id || '10';
 
       const params = new URLSearchParams({
         InternalTicketID: ticket.InternalTicketID,
@@ -578,7 +586,7 @@ export default function PendingTickets() {
       )}
 
       {/* ── Main ── */}
-      <motion.main 
+      <motion.main
         className="pt-main"
         variants={containerVariants}
         initial="hidden"
@@ -603,7 +611,7 @@ export default function PendingTickets() {
               onClick={() => setViewType('assigned')}
             >
               <i className="fa-solid fa-user-check"></i>
-              My Ticket
+              Assign Tasks
             </button>
             <button
               className={`pt-toggle-btn ${viewType === 'pending' ? 'active' : ''}`}
@@ -636,8 +644,8 @@ export default function PendingTickets() {
 
         {/* Stats */}
         <motion.div className="pt-stats-row" variants={containerVariants}>
-          <motion.div 
-            className="pt-stat-card total" 
+          <motion.div
+            className="pt-stat-card total"
             variants={cardVariants}
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.98 }}
@@ -648,8 +656,8 @@ export default function PendingTickets() {
               <span className="pt-stat-label">Total Tickets</span>
             </div>
           </motion.div>
-          <motion.div 
-            className="pt-stat-card pending" 
+          <motion.div
+            className="pt-stat-card pending"
             variants={cardVariants}
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.98 }}
@@ -660,8 +668,8 @@ export default function PendingTickets() {
               <span className="pt-stat-label">Unassigned</span>
             </div>
           </motion.div>
-          <motion.div 
-            className="pt-stat-card assigned" 
+          <motion.div
+            className="pt-stat-card assigned"
             variants={cardVariants}
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.98 }}
@@ -764,17 +772,27 @@ export default function PendingTickets() {
                           <span className="pt-card-id">#{ticket.TicketNo}</span>
                           <span className="pt-card-type" style={{ color: typeStyle.color, background: typeStyle.bg }}>{ticket.Type}</span>
                         </div>
-                        <div className={`pt-card-status ${isAssigned ? 'assigned' : 'pending'}`}>
-                          <div className="pt-status-dot"></div>
-                          {isAssigned ? 'Assigned' : 'Pending'}
+                        <div className="pt-card-badges-row">
+                          <span className={`pt-priority-badge ${getPriorityStyle(ticket.Priority).class}`}>
+                            {getPriorityStyle(ticket.Priority).text}
+                          </span>
+                          <div className={`pt-card-status ${isAssigned ? 'assigned' : 'pending'}`}>
+                            <div className="pt-status-dot"></div>
+                            {isAssigned ? 'Assigned' : 'Pending'}
+                          </div>
                         </div>
                       </div>
                       <div className="pt-card-body">
                         <div className="pt-card-meta-grid">
                           <div className="pt-card-meta-item"><i className="fa-solid fa-user"></i><div className="pt-meta-content"><label>Raised By</label><span>{ticket.UserName || '—'}</span></div></div>
-                          <div className="pt-card-meta-item"><i className="fa-solid fa-building"></i><div className="pt-meta-content"><label>Branch</label><span title={ticket.BranchName}>{ticket.BranchName}</span></div></div>
-                          <div className="pt-card-meta-item"><i className="fa-solid fa-phone"></i><div className="pt-meta-content"><label>Contact</label><span>{ticket.Phone}</span></div></div>
+                          <div className="pt-card-meta-item"><i className="fa-solid fa-building"></i><div className="pt-meta-content"><label>Branch</label><span title={ticket.BranchName}>{ticket.BranchName || '—'}</span></div></div>
+                          <div className="pt-card-meta-item"><i className="fa-solid fa-phone"></i><div className="pt-meta-content"><label>Contact</label><span>{ticket.Phone || '—'}</span></div></div>
                           <div className="pt-card-meta-item"><i className="fa-solid fa-clock"></i><div className="pt-meta-content"><label>Delay</label><span className={ticket.Delay ? 'pt-delay-warn' : ''}>{ticket.Delay || '—'}</span></div></div>
+                          <div className="pt-card-meta-item"><i className="fa-solid fa-id-badge"></i><div className="pt-meta-content"><label>Branch ID</label><span>{ticket.BranchID || '—'}</span></div></div>
+                          <div className="pt-card-meta-item"><i className="fa-solid fa-user-gear"></i><div className="pt-meta-content"><label>Assigned By</label><span>{ticket.AssignedBy || '—'}</span></div></div>
+                          <div className="pt-card-meta-item"><i className="fa-solid fa-calendar-check"></i><div className="pt-meta-content"><label>Assigned On</label><span>{ticket.AssignedOn || '—'}</span></div></div>
+                          <div className="pt-card-meta-item"><i className="fa-solid fa-circle-play"></i><div className="pt-meta-content"><label>Call Status</label><span>{ticket.CallStatus || '—'}</span></div></div>
+                          <div className="pt-card-meta-item"><i className="fa-solid fa-fingerprint"></i><div className="pt-meta-content"><label>Internal ID</label><span>{ticket.InternalTicketID || '—'}</span></div></div>
                         </div>
                         {ticket.Remarks && (<div className="pt-card-remarks"><i className="fa-solid fa-quote-left"></i><p>{ticket.Remarks}</p></div>)}
                       </div>
@@ -820,8 +838,8 @@ export default function PendingTickets() {
           /* ── MY TASKS: Responsive Grid Layout Grouped by Agent ── */
           <div className="pt-assigned-grid-section" style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
             {filtered.map((group) => (
-              <div 
-                key={group.agentName} 
+              <div
+                key={group.agentName}
                 className="pt-agent-group-grid-container"
               >
                 {/* Agent Header */}
@@ -908,42 +926,28 @@ export default function PendingTickets() {
                               {ticket.Type}
                             </span>
                           </div>
-                          <div className={`pt-card-status ${isAssigned ? 'assigned' : 'pending'}`}>
-                            <div className="pt-status-dot"></div>
-                            {isAssigned ? 'Assigned' : 'Pending'}
+                          <div className="pt-card-badges-row">
+                            <span className={`pt-priority-badge ${getPriorityStyle(ticket.Priority).class}`}>
+                              {getPriorityStyle(ticket.Priority).text}
+                            </span>
+                            <div className={`pt-card-status ${isAssigned ? 'assigned' : 'pending'}`}>
+                              <div className="pt-status-dot"></div>
+                              {isAssigned ? 'Assigned' : 'Pending'}
+                            </div>
                           </div>
                         </div>
 
                         <div className="pt-card-body">
                           <div className="pt-card-meta-grid">
-                            <div className="pt-card-meta-item">
-                              <i className="fa-solid fa-user"></i>
-                              <div className="pt-meta-content">
-                                <label>Raised By</label>
-                                <span>{ticket.UserName || '—'}</span>
-                              </div>
-                            </div>
-                            <div className="pt-card-meta-item">
-                              <i className="fa-solid fa-building"></i>
-                              <div className="pt-meta-content">
-                                <label>Branch</label>
-                                <span title={ticket.BranchName}>{ticket.BranchName}</span>
-                              </div>
-                            </div>
-                            <div className="pt-card-meta-item">
-                              <i className="fa-solid fa-phone"></i>
-                              <div className="pt-meta-content">
-                                <label>Contact</label>
-                                <span>{ticket.Phone}</span>
-                              </div>
-                            </div>
-                            <div className="pt-card-meta-item">
-                              <i className="fa-solid fa-clock"></i>
-                              <div className="pt-meta-content">
-                                <label>Delay</label>
-                                <span className={ticket.Delay ? 'pt-delay-warn' : ''}>{ticket.Delay || '—'}</span>
-                              </div>
-                            </div>
+                            <div className="pt-card-meta-item"><i className="fa-solid fa-user"></i><div className="pt-meta-content"><label>Raised By</label><span>{ticket.UserName || '—'}</span></div></div>
+                            <div className="pt-card-meta-item"><i className="fa-solid fa-building"></i><div className="pt-meta-content"><label>Branch</label><span title={ticket.BranchName}>{ticket.BranchName || '—'}</span></div></div>
+                            <div className="pt-card-meta-item"><i className="fa-solid fa-phone"></i><div className="pt-meta-content"><label>Contact</label><span>{ticket.Phone || '—'}</span></div></div>
+                            <div className="pt-card-meta-item"><i className="fa-solid fa-clock"></i><div className="pt-meta-content"><label>Delay</label><span className={ticket.Delay ? 'pt-delay-warn' : ''}>{ticket.Delay || '—'}</span></div></div>
+                            <div className="pt-card-meta-item"><i className="fa-solid fa-id-badge"></i><div className="pt-meta-content"><label>Branch ID</label><span>{ticket.BranchID || '—'}</span></div></div>
+                            <div className="pt-card-meta-item"><i className="fa-solid fa-user-gear"></i><div className="pt-meta-content"><label>Assigned By</label><span>{ticket.AssignedBy || '—'}</span></div></div>
+                            <div className="pt-card-meta-item"><i className="fa-solid fa-calendar-check"></i><div className="pt-meta-content"><label>Assigned On</label><span>{ticket.AssignedOn || '—'}</span></div></div>
+                            <div className="pt-card-meta-item"><i className="fa-solid fa-circle-play"></i><div className="pt-meta-content"><label>Call Status</label><span>{ticket.CallStatus || '—'}</span></div></div>
+                            <div className="pt-card-meta-item"><i className="fa-solid fa-fingerprint"></i><div className="pt-meta-content"><label>Internal ID</label><span>{ticket.InternalTicketID || '—'}</span></div></div>
                           </div>
 
                           {ticket.Remarks && (
@@ -1305,7 +1309,7 @@ export default function PendingTickets() {
                 <div className="at-field">
                   <label className="at-label">Priority Level</label>
                   <div className="at-radio-group">
-                    {['High', 'Med', 'Low'].map((level) => (
+                    {['High', 'Mid', 'Low'].map((level) => (
                       <label key={level} className={`at-radio-label ${assignForm.priority === level ? 'active' : ''}`}>
                         <input
                           type="radio"
@@ -1481,6 +1485,50 @@ export default function PendingTickets() {
                       <div className="info-text">
                         <label>Category</label>
                         <span>{viewTicket.Type || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="detail-info-item">
+                      <i className="fa-solid fa-flag" style={{ color: getPriorityStyle(viewTicket.Priority).color }}></i>
+                      <div className="info-text">
+                        <label>Priority</label>
+                        <span className={`pt-priority-badge ${getPriorityStyle(viewTicket.Priority).class}`}>
+                          {getPriorityStyle(viewTicket.Priority).text}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="detail-info-item">
+                      <i className="fa-solid fa-id-badge"></i>
+                      <div className="info-text">
+                        <label>Branch ID</label>
+                        <span>{viewTicket.BranchID || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="detail-info-item">
+                      <i className="fa-solid fa-circle-play"></i>
+                      <div className="info-text">
+                        <label>Call Status</label>
+                        <span>{viewTicket.CallStatus || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="detail-info-item">
+                      <i className="fa-solid fa-user-gear"></i>
+                      <div className="info-text">
+                        <label>Assigned By</label>
+                        <span>{viewTicket.AssignedBy || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="detail-info-item">
+                      <i className="fa-solid fa-calendar-check"></i>
+                      <div className="info-text">
+                        <label>Assigned On</label>
+                        <span>{viewTicket.AssignedOn || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="detail-info-item">
+                      <i className="fa-solid fa-fingerprint"></i>
+                      <div className="info-text">
+                        <label>Internal ID</label>
+                        <span>{viewTicket.InternalTicketID || '—'}</span>
                       </div>
                     </div>
                   </div>

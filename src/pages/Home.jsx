@@ -350,9 +350,9 @@ function Home() {
   ];
 
   // Employees see only Pending Tickets & Recent Records
-  // Customers see only Home & Agent Status
+  // Customers see Home, Agent Status & Recent Records
   const navItems = isCustomer
-    ? allNavItems.filter(item => item.name !== 'Pending Tickets' && item.name !== 'Recent Records')
+    ? allNavItems.filter(item => item.name !== 'Pending Tickets')
     : allNavItems.filter(item => item.name !== 'Home' && item.name !== 'Agent Status');
 
   // Status badge config
@@ -598,24 +598,22 @@ function Home() {
               </div>
             </motion.div>
 
-            {!isCustomer && (
-              <>
-                <div className="section-label-v2">Recent Activity</div>
-                <motion.div
-                  className="history-link-card-v2"
-                  variants={itemVariants}
-                  whileHover={{ x: 5 }}
-                  onClick={fetchRecentTickets}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="hist-left">
-                    <i className="fa-solid fa-clock-rotate-left"></i>
-                    <span>Recent Records</span>
-                  </div>
-                  <i className="fa-solid fa-chevron-right"></i>
-                </motion.div>
-              </>
-            )}
+            <>
+              <div className="section-label-v2">Recent Activity</div>
+              <motion.div
+                className="history-link-card-v2"
+                variants={itemVariants}
+                whileHover={{ x: 5 }}
+                onClick={fetchRecentTickets}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="hist-left">
+                  <i className="fa-solid fa-clock-rotate-left"></i>
+                  <span>Recent Records</span>
+                </div>
+                <i className="fa-solid fa-chevron-right"></i>
+              </motion.div>
+            </>
 
 
           </div>
@@ -733,7 +731,7 @@ function Home() {
           <>
             {/* Backdrop */}
             <motion.div
-              className="modal-overlay"
+              className="recent-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
