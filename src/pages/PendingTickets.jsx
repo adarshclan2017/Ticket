@@ -643,7 +643,7 @@ export default function PendingTickets() {
         </motion.div>
 
         {/* Stats */}
-        <motion.div className="pt-stats-row" variants={containerVariants}>
+        <motion.div className="pt-stats-row" variants={containerVariants} style={{ gridTemplateColumns: '1fr', maxWidth: '280px' }}>
           <motion.div
             className="pt-stat-card total"
             variants={cardVariants}
@@ -656,53 +656,7 @@ export default function PendingTickets() {
               <span className="pt-stat-label">Total Tickets</span>
             </div>
           </motion.div>
-          <motion.div
-            className="pt-stat-card pending"
-            variants={cardVariants}
-            whileHover={{ scale: 1.03, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <i className="fa-solid fa-hourglass-half"></i>
-            <div>
-              <span className="pt-stat-num">{pendingCount}</span>
-              <span className="pt-stat-label">Unassigned</span>
-            </div>
-          </motion.div>
-          <motion.div
-            className="pt-stat-card assigned"
-            variants={cardVariants}
-            whileHover={{ scale: 1.03, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <i className="fa-solid fa-user-check"></i>
-            <div>
-              <span className="pt-stat-num">{assignedCount}</span>
-              <span className="pt-stat-label">Assigned</span>
-            </div>
-          </motion.div>
         </motion.div>
-
-        {/* Toolbar */}
-        <div className="pt-toolbar">
-          <div className="pt-search-box">
-            <i className="fa-solid fa-magnifying-glass"></i>
-            <input type="text" placeholder="Search by ticket no, name, branch, type..."
-              value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-            {searchQuery && (
-              <button className="pt-clear-btn" onClick={() => setSearchQuery('')}>
-                <i className="fa-solid fa-xmark"></i>
-              </button>
-            )}
-          </div>
-          <div className="pt-filter-tabs">
-            {['all', 'unassigned', 'assigned'].map((f) => (
-              <button key={f} className={`pt-filter-tab ${filterStatus === f ? 'active' : ''}`}
-                onClick={() => setFilterStatus(f)}>
-                {f.charAt(0).toUpperCase() + f.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Loading */}
         {loading && (
@@ -745,12 +699,12 @@ export default function PendingTickets() {
                 initial="hidden"
                 animate="visible"
               >
-                {group.tickets.map((ticket) => {
+                {group.tickets.map((ticket, idx) => {
                   const isAssigned = (ticket.CallStatus === '1' || ticket.CallStatus === 'Assigned') || assignedIds.has(ticket.InternalTicketID);
                   const typeStyle = getTypeStyle(ticket.Type);
                   return (
                     <motion.div
-                      key={ticket.InternalTicketID}
+                      key={ticket.InternalTicketID ? `${ticket.InternalTicketID}-${idx}` : `ticket-${idx}`}
                       className={`pt-card ${isAssigned ? 'assigned' : 'pending'}`}
                       variants={cardVariants}
                       whileHover={{ y: -8 }}
@@ -801,32 +755,37 @@ export default function PendingTickets() {
                           <div className="pt-card-date"><i className="fa-regular fa-calendar-days"></i><span>{formatDate(ticket.CreationDate)}</span></div>
                           <div className="pt-card-serial-small">SN: {ticket.SerialNo}</div>
                         </div>
-                        {isAssigned ? (
-                          <>
-                            <div className="pt-card-assigned-pill">
-                              <div className="pt-assigned-avatar">{ticket.AssignedTo?.charAt(0) || 'A'}</div>
-                              <div className="pt-assigned-details"><span>Assigned to</span><strong>{ticket.AssignedTo}</strong></div>
-                            </div>
-                            <div className="pt-card-actions-row">
-                              <button className="pt-action-btn play" onClick={(e) => handleUpdateStatus(e, ticket, 'PLAY')} title="Start Task">
-                                <i className="fa-solid fa-play"></i><span>Play</span>
-                              </button>
-                              <button className="pt-action-btn pause" onClick={(e) => handleUpdateStatus(e, ticket, 'PAUSE')} title="Pause Task">
-                                <i className="fa-solid fa-pause"></i><span>Pause</span>
-                              </button>
-                              <button className="pt-action-btn done" onClick={(e) => handleUpdateStatus(e, ticket, 'DONE')} title="Complete Task">
-                                <i className="fa-solid fa-check"></i><span>Done</span>
-                              </button>
-                              <button className="pt-action-btn l3" onClick={(e) => handleUpdateStatus(e, ticket, 'L3')} title="Request L3 Support">
-                                <i className="fa-solid fa-angles-up"></i><span>L3</span>
-                              </button>
-                            </div>
-                          </>
-                        ) : (
-                          <motion.button className="pt-card-assign-btn" onClick={(e) => { e.stopPropagation(); openAssignModal(ticket); }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                            <i className="fa-solid fa-user-plus"></i><span>Assign Task</span>
-                          </motion.button>
+                        {isAssigned && (
+                          <div className="pt-card-assigned-pill">
+                            <div className="pt-assigned-avatar">{ticket.AssignedTo?.charAt(0) || 'A'}</div>
+                            <div className="pt-assigned-details"><span>Assigned to</span><strong>{ticket.AssignedTo}</strong></div>
+                          </div>
                         )}
+                        {viewType === 'l3' && (
+                          <div className="pt-card-actions-row">
+                            <button className={`pt-action-btn play ${(ticket.CallStatus || '').toUpperCase() === 'PLAY' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'PLAY')} title="Start Task">
+                              <i className="fa-solid fa-play"></i><span>Play</span>
+                            </button>
+                            <button className={`pt-action-btn pause ${(ticket.CallStatus || '').toUpperCase() === 'PAUSE' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'PAUSE')} title="Pause Task">
+                              <i className="fa-solid fa-pause"></i><span>Pause</span>
+                            </button>
+                            <button className={`pt-action-btn done ${(ticket.CallStatus || '').toUpperCase() === 'DONE' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'DONE')} title="Complete Task">
+                              <i className="fa-solid fa-check"></i><span>Done</span>
+                            </button>
+                            <button className={`pt-action-btn l3 ${(ticket.CallStatus || '').toUpperCase() === 'L3 REQUEST' || (ticket.CallStatus || '').toUpperCase() === 'L3' || (ticket.CallStatus || '').toUpperCase() === 'LEVEL3' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'L3 Request')} title="Request L3 Support">
+                              <i className="fa-solid fa-angles-up"></i><span>L3</span>
+                            </button>
+                          </div>
+                        )}
+                        <motion.button
+                          className="pt-card-assign-btn"
+                          style={{ marginTop: viewType === 'l3' ? '8px' : '0px' }}
+                          onClick={(e) => { e.stopPropagation(); openAssignModal(ticket); }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          <i className="fa-solid fa-user-plus"></i><span>Assign Task</span>
+                        </motion.button>
                       </div>
                     </motion.div>
                   );
@@ -897,13 +856,13 @@ export default function PendingTickets() {
                       Drop ticket here to assign to {group.agentName}
                     </div>
                   )}
-                  {group.tickets.map((ticket) => {
+                  {group.tickets.map((ticket, idx) => {
                     const isAssigned = (ticket.CallStatus === '1' || ticket.CallStatus === 'Assigned') || assignedIds.has(ticket.InternalTicketID);
                     const typeStyle = getTypeStyle(ticket.Type);
 
                     return (
                       <motion.div
-                        key={ticket.InternalTicketID}
+                        key={ticket.InternalTicketID ? `${ticket.InternalTicketID}-${idx}` : `ticket-${idx}`}
                         className={`pt-card ${isAssigned ? 'assigned' : 'pending'}`}
                         variants={cardVariants}
                         layout
@@ -967,44 +926,29 @@ export default function PendingTickets() {
                             <div className="pt-card-serial-small">SN: {ticket.SerialNo}</div>
                           </div>
 
-                          {isAssigned ? (
-                            <>
-                              <div className="pt-card-assigned-pill">
-                                <div className="pt-assigned-avatar">{ticket.AssignedTo?.charAt(0) || 'A'}</div>
-                                <div className="pt-assigned-details">
-                                  <span>Assigned to</span>
-                                  <strong>{ticket.AssignedTo}</strong>
-                                </div>
+                          {isAssigned && (
+                            <div className="pt-card-assigned-pill">
+                              <div className="pt-assigned-avatar">{ticket.AssignedTo?.charAt(0) || 'A'}</div>
+                              <div className="pt-assigned-details">
+                                <span>Assigned to</span>
+                                <strong>{ticket.AssignedTo}</strong>
                               </div>
-                              <div className="pt-card-actions-row">
-                                <button className="pt-action-btn play" onClick={(e) => handleUpdateStatus(e, ticket, 'PLAY')} title="Start Task">
-                                  <i className="fa-solid fa-play"></i><span>Play</span>
-                                </button>
-                                <button className="pt-action-btn pause" onClick={(e) => handleUpdateStatus(e, ticket, 'PAUSE')} title="Pause Task">
-                                  <i className="fa-solid fa-pause"></i><span>Pause</span>
-                                </button>
-                                <button className="pt-action-btn done" onClick={(e) => handleUpdateStatus(e, ticket, 'DONE')} title="Complete Task">
-                                  <i className="fa-solid fa-check"></i><span>Done</span>
-                                </button>
-                                <button className="pt-action-btn l3" onClick={(e) => handleUpdateStatus(e, ticket, 'L3')} title="Request L3 Support">
-                                  <i className="fa-solid fa-angles-up"></i><span>L3</span>
-                                </button>
-                              </div>
-                            </>
-                          ) : (
-                            <motion.button
-                              className="pt-card-assign-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openAssignModal(ticket);
-                              }}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                            >
-                              <i className="fa-solid fa-user-plus"></i>
-                              <span>Assign Task</span>
-                            </motion.button>
+                            </div>
                           )}
+                          <div className="pt-card-actions-row">
+                            <button className={`pt-action-btn play ${(ticket.CallStatus || '').toUpperCase() === 'PLAY' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'PLAY')} title="Start Task">
+                              <i className="fa-solid fa-play"></i><span>Play</span>
+                            </button>
+                            <button className={`pt-action-btn pause ${(ticket.CallStatus || '').toUpperCase() === 'PAUSE' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'PAUSE')} title="Pause Task">
+                              <i className="fa-solid fa-pause"></i><span>Pause</span>
+                            </button>
+                            <button className={`pt-action-btn done ${(ticket.CallStatus || '').toUpperCase() === 'DONE' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'DONE')} title="Complete Task">
+                              <i className="fa-solid fa-check"></i><span>Done</span>
+                            </button>
+                            <button className={`pt-action-btn l3 ${(ticket.CallStatus || '').toUpperCase() === 'L3 REQUEST' || (ticket.CallStatus || '').toUpperCase() === 'L3' || (ticket.CallStatus || '').toUpperCase() === 'LEVEL3' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'L3 Request')} title="Request L3 Support">
+                              <i className="fa-solid fa-angles-up"></i><span>L3</span>
+                            </button>
+                          </div>
                         </div>
                       </motion.div>
                     );

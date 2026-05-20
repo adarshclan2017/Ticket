@@ -489,22 +489,26 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-  
+
   /* Optimize card element spacing & sizes for tight 2-column grid */
   .pt-card-header {
     padding: 10px 10px 8px;
     gap: 6px;
   }
+
   .pt-card-id-row {
-    flex-wrap: wrap; /* Wrap ID and Type if they exceed width */
+    flex-wrap: wrap;
+    /* Wrap ID and Type if they exceed width */
     gap: 6px;
     align-items: flex-start;
   }
+
   .pt-card-id {
     font-size: 12px;
     word-break: break-all;
     max-width: 100%;
   }
+
   .pt-card-type {
     font-size: 8px;
     padding: 2px 6px;
@@ -513,77 +517,97 @@
     overflow: hidden;
     max-width: 100%;
   }
+
   .pt-card-status {
     font-size: 9px;
     padding: 2px 6px;
     margin-top: 2px;
   }
+
   .pt-card-body {
     padding: 10px;
     gap: 6px;
   }
+
   .pt-card-meta-grid {
     gap: 6px;
   }
+
   .pt-card-meta-item {
     gap: 6px;
   }
+
   .pt-card-meta-item i {
     font-size: 10px;
     margin-top: 2px;
   }
+
   .pt-meta-content label {
     font-size: 8px;
     margin-bottom: 0px;
   }
+
   .pt-meta-content span {
     font-size: 10.5px;
     word-break: break-word;
     line-height: 1.2;
   }
+
   .pt-card-remarks {
     padding: 6px 8px;
     gap: 4px;
     margin-top: 2px;
   }
+
   .pt-card-remarks i {
     font-size: 9px;
   }
+
   .pt-card-remarks p {
     font-size: 9.5px;
     line-height: 1.3;
   }
+
   .pt-card-footer {
     padding: 10px;
     gap: 6px;
   }
+
   .pt-card-footer-top {
-    flex-wrap: wrap; /* Wrap date and SN to prevent overflow */
+    flex-wrap: wrap;
+    /* Wrap date and SN to prevent overflow */
     gap: 4px;
   }
+
   .pt-card-date {
     font-size: 8.5px;
   }
+
   .pt-card-serial-small {
     font-size: 8.5px;
   }
+
   .pt-card-assign-btn {
     padding: 6px;
     font-size: 10px;
   }
+
   .pt-card-assigned-pill {
     padding: 4px 8px;
     gap: 6px;
     border-radius: 8px;
   }
+
   .pt-assigned-avatar {
     width: 20px;
     height: 20px;
     font-size: 10px;
   }
+
   .pt-assigned-details span {
     font-size: 7px;
   }
+
   .pt-assigned-details strong {
     font-size: 10px;
   }
@@ -1005,6 +1029,63 @@
 
 .pt-card-assign-btn:hover {
   background: #00acc1;
+}
+
+.pt-card-actions-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pt-action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pt-action-btn i {
+  font-size: 14px;
+}
+
+.pt-action-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.pt-action-btn.active.play {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #059669;
+}
+
+.pt-action-btn.active.pause {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #d97706;
+}
+
+.pt-action-btn.active.done {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #2563eb;
+}
+
+.pt-action-btn.active.l3 {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #dc2626;
 }
 
 .pt-card-assigned-pill {
@@ -1779,7 +1860,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 30px 60px rgba(15, 23, 42, 0.12),
-              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   position: relative;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -2008,13 +2089,15 @@
 @media (max-width: 768px) {
   .modal-overlay {
     padding: 0;
-    align-items: flex-end; /* Align sheet to the bottom */
+    align-items: flex-end;
+    /* Align sheet to the bottom */
   }
 
   .detail-popup-page {
     max-width: 100%;
     max-height: 90vh;
-    border-radius: 28px 28px 0 0; /* Rounded top corners only */
+    border-radius: 28px 28px 0 0;
+    /* Rounded top corners only */
     border-bottom: none;
     border-left: none;
     border-right: none;
@@ -2022,7 +2105,8 @@
   }
 
   .detail-drag-handle {
-    display: block; /* Show handle pill on mobile */
+    display: block;
+    /* Show handle pill on mobile */
   }
 
   .detail-header {
@@ -2050,7 +2134,8 @@
 
   .detail-scroll-content {
     padding: 12px 20px;
-    overflow-y: hidden; /* Hide scrollbars if possible */
+    overflow-y: hidden;
+    /* Hide scrollbars if possible */
   }
 
   .detail-section {
@@ -2064,10 +2149,11 @@
   }
 
   .detail-info-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile details! */
+    grid-template-columns: repeat(2, 1fr);
+    /* 2 columns on mobile details! */
     gap: 8px;
   }
-  
+
   .detail-info-item {
     padding: 8px 10px;
     gap: 8px;
@@ -2124,11 +2210,13 @@
   }
 
   .detail-footer {
-    padding: 8px 20px 24px; /* Pad bottom for mobile safe area */
+    padding: 8px 20px 24px;
+    /* Pad bottom for mobile safe area */
   }
-  
+
   .detail-primary-btn {
-    width: 100%; /* Full-width close button on mobile */
+    width: 100%;
+    /* Full-width close button on mobile */
     text-align: center;
     padding: 10px;
     font-size: 13px;
@@ -2861,6 +2949,7 @@
   background: linear-gradient(135deg, #10b981, #059669);
   box-shadow: 0 3px 8px rgba(16, 185, 129, 0.2);
 }
+
 .pt-action-btn.play:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
@@ -2872,6 +2961,7 @@
   background: linear-gradient(135deg, #f59e0b, #d97706);
   box-shadow: 0 3px 8px rgba(245, 158, 11, 0.2);
 }
+
 .pt-action-btn.pause:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
@@ -2883,6 +2973,7 @@
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
   box-shadow: 0 3px 8px rgba(14, 165, 233, 0.2);
 }
+
 .pt-action-btn.done:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35);
@@ -2894,6 +2985,7 @@
   background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   box-shadow: 0 3px 8px rgba(139, 92, 246, 0.2);
 }
+
 .pt-action-btn.l3:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
@@ -2905,11 +2997,13 @@
   .pt-card-actions-row {
     gap: 4px;
   }
+
   .pt-action-btn {
     font-size: 9.5px;
     padding: 6px 2px;
     border-radius: 8px;
   }
+
   .pt-action-btn i {
     font-size: 10px;
   }
