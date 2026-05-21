@@ -255,10 +255,10 @@ function Home() {
       // Build query parameters from form data and advanced settings
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
       const params = new URLSearchParams({
-        InternalUserID: userData.internal_user_id || '4',
-        UserName: advancedSettings.userName || userData.user_name || 'Admin',
-        BranchID: advancedSettings.branchId || 'SYSTEL',
-        BranchName: advancedSettings.branchName || 'INFOLAB TECHNOLOGIES HO',
+        InternalUserID: isCustomer ? (localStorage.getItem('customerBranchUserId') || '4') : (userData.internal_user_id || '4'),
+        UserName: advancedSettings.userName || (isCustomer ? localStorage.getItem('customerUserName') : userData.user_name) || 'Admin',
+        BranchID: advancedSettings.branchId || (isCustomer ? localStorage.getItem('customerBranchId') : '') || 'SYSTEL',
+        BranchName: advancedSettings.branchName || (isCustomer ? localStorage.getItem('customerBranchName') : '') || 'INFOLAB TECHNOLOGIES HO',
         InstanceName: advancedSettings.instanceName || '',
         DBName: advancedSettings.dbName || '',
         Phone: formData.phoneNumber,
@@ -321,7 +321,7 @@ function Home() {
     setRecentError(null);
     try {
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const internalUserId = userData.internal_user_id || '4';
+      const internalUserId = isCustomer ? (localStorage.getItem('customerBranchUserId') || '4') : (userData.internal_user_id || '4');
       const res = await fetch(`${API_BASE}/unniService.asmx/loadRaisedSupportTickets?InternalUserID=${internalUserId}`);
       const text = await res.text();
 
@@ -435,9 +435,17 @@ function Home() {
         variants={containerVariants}
       >
         <header className="content-header">
-          <div className="header-left">
-            <motion.h1 variants={itemVariants}>Support Desk</motion.h1>
-
+          <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <motion.h1 variants={itemVariants} style={{ margin: 0 }}>Support Desk</motion.h1>
+            {isCustomer && localStorage.getItem('customerBranchName') && (
+              <motion.span
+                className="branch-badge"
+                variants={itemVariants}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <i className="fa-solid fa-code-branch"></i> {localStorage.getItem('customerBranchName')}
+              </motion.span>
+            )}
           </div>
           <div className="header-right-group">
             {notificationPermission !== 'granted' && (

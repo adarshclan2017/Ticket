@@ -11,6 +11,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      '/inpack-api': {
+        target: 'http://148.72.215.143:2025',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/inpack-api/, ''),
+      },
     },
   },
 })

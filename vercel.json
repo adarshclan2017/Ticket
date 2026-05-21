@@ -8,6 +8,10 @@
       "destination": "http://148.72.215.143:180/$1"
     },
     {
+      "source": "/inpack-api/(.*)",
+      "destination": "http://148.72.215.143:2025/$1"
+    },
+    {
       "source": "/((?!assets/).*)",
       "destination": "/index.html"
     }

@@ -2,3 +2,4 @@
 // proxy `/api/*` to the backend, so we always use `/api` as the base.
 
 export const API_BASE = '/api';
+export const INPACK_API_BASE = '/inpack-api';
