@@ -285,7 +285,63 @@ export default function RoleSelect() {
       // Store full objects for any further references
       localStorage.setItem('customerBranch', JSON.stringify(selectedBranch));
       if (clientData) {
+        localStorage.setItem('customerResponse', JSON.stringify(clientData));
         localStorage.setItem('customerClientData', JSON.stringify(clientData));
+        
+        // Store all fields of the response individually in internal storage
+        localStorage.setItem('success', String(clientData.success));
+        localStorage.setItem('message', String(clientData.message || ''));
+        localStorage.setItem('client_id', String(clientData.client_id || ''));
+        localStorage.setItem('client_name', String(clientData.client_name || ''));
+        localStorage.setItem('contact_person', String(clientData.contact_person || ''));
+        localStorage.setItem('phone', String(clientData.phone || ''));
+        localStorage.setItem('email', String(clientData.email || ''));
+        localStorage.setItem('companies', JSON.stringify(clientData.companies || []));
+        localStorage.setItem('Branches', JSON.stringify(clientData.Branches || []));
+        localStorage.setItem('AppVersion', JSON.stringify(clientData.AppVersion || []));
+
+        // Also store prefixed keys for consistency and namespace protection
+        localStorage.setItem('customerSuccess', String(clientData.success));
+        localStorage.setItem('customerMessage', String(clientData.message || ''));
+        localStorage.setItem('customerCompanies', JSON.stringify(clientData.companies || []));
+        localStorage.setItem('customerBranchesList', JSON.stringify(clientData.Branches || []));
+        localStorage.setItem('customerAppVersionList', JSON.stringify(clientData.AppVersion || []));
+
+        // Print stored items to console for visibility
+        console.log("%c🔑 [Customer Login] Stored elements in internalStorage (localStorage):", "color: #10b981; font-weight: bold; font-size: 14px;", {
+          userRole: 'customer',
+          customerPhone: custPhone.trim(),
+          customerImei: receivedImei,
+          customerBranchName: branchName,
+          customerBranchId: branchId,
+          customerUserName: userName,
+          customerBranchUserId: internalUserId,
+          customerInternalUserId: internalUserId,
+          customerInternalCompanyId: internalCompanyId,
+          customerLicenseKey: licenseKey,
+          customerIsApprover: isApprover,
+          customerCompanyName: companyName,
+          customerClientId: clientId,
+          customerClientName: clientName,
+          customerContactPerson: contactPerson,
+          customerEmail: email,
+          customerAppVersion: appVersion,
+          branch: branchName,
+          branchId: branchId,
+          branchUserId: internalUserId,
+          customerBranch: selectedBranch,
+          customerResponse: clientData,
+          success: String(clientData.success),
+          message: String(clientData.message || ''),
+          client_id: String(clientData.client_id || ''),
+          client_name: String(clientData.client_name || ''),
+          contact_person: String(clientData.contact_person || ''),
+          phone: String(clientData.phone || ''),
+          email: String(clientData.email || ''),
+          companies: clientData.companies || [],
+          Branches: clientData.Branches || [],
+          AppVersion: clientData.AppVersion || []
+        });
       }
 
       setCustSuccess(`Logged in successfully for branch: ${branchName}`);

@@ -16,6 +16,67 @@ function Home() {
       navigate('/pending-tickets', { replace: true });
     }
   }, [isCustomer, navigate]);
+
+  // Log customer details stored in localStorage when Home mounts
+  React.useEffect(() => {
+    if (isCustomer) {
+      const storedData = {};
+      const customerKeys = [
+        'customerResponse',
+        'customerClientData',
+        'success',
+        'message',
+        'client_id',
+        'client_name',
+        'contact_person',
+        'phone',
+        'email',
+        'companies',
+        'Branches',
+        'AppVersion',
+        'customerSuccess',
+        'customerMessage',
+        'customerCompanies',
+        'customerBranchesList',
+        'customerAppVersionList',
+        'userRole',
+        'customerPhone',
+        'customerImei',
+        'customerBranchName',
+        'customerBranchId',
+        'customerUserName',
+        'customerBranchUserId',
+        'customerInternalUserId',
+        'customerInternalCompanyId',
+        'customerLicenseKey',
+        'customerIsApprover',
+        'customerCompanyName',
+        'customerClientId',
+        'customerClientName',
+        'customerContactPerson',
+        'customerEmail',
+        'customerAppVersion',
+        'branch',
+        'branchId',
+        'branchUserId',
+        'customerBranch'
+      ];
+      
+      customerKeys.forEach(key => {
+        const val = localStorage.getItem(key);
+        if (val !== null) {
+          try {
+            storedData[key] = JSON.parse(val);
+          } catch {
+            storedData[key] = val;
+          }
+        }
+      });
+
+      console.warn("🔑 [Home Load] Stored localStorage values for Customer:", storedData);
+    }
+  }, [isCustomer]);
+
   // State for form fields
   const [formData, setFormData] = useState({
     phoneNumber: '',
