@@ -117,6 +117,7 @@ function Home() {
   const [isRecentLoading, setIsRecentLoading] = useState(false);
   const [recentError, setRecentError] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [feedbackPopup, setFeedbackPopup] = useState(null);
 
   // Animation variants
   const containerVariants = {
@@ -398,6 +399,54 @@ function Home() {
     } catch (err) {
       console.error('Failed to load recent tickets:', err);
       setRecentError('Failed to load tickets. Please try again.');
+    } finally {
+      setIsRecentLoading(false);
+    }
+  };
+
+  const handleCloseTicket = async (e, ticket) => {
+    e.stopPropagation();
+    try {
+      setIsRecentLoading(true);
+      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const internalUserId = isCustomer ? (localStorage.getItem('customerBranchUserId') || '4') : (userData.internal_user_id || '4');
+
+      const params = new URLSearchParams({
+        InternalTicketID: ticket.InternalTicketID,
+        Action: 'CLOSE',
+        InternalUserID: internalUserId,
+        Rating: '',
+        RatingRemarks: '',
+      });
+
+      const res = await fetch(`${API_BASE}/unniService.asmx/SaveTicketStatus?${params.toString()}`);
+      const text = await res.text();
+
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(text, 'text/xml');
+      const stringNode = xmlDoc.getElementsByTagName('string')[0];
+      const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
+
+      let result = null;
+      try {
+        result = JSON.parse(jsonStr);
+      } catch {
+        result = { success: false, message: jsonStr };
+      }
+
+      setFeedbackPopup({
+        type: 'success',
+        title: 'Ticket Closed',
+        message: `Ticket #${ticket.TicketNo} has been successfully closed.`
+      });
+      fetchRecentTickets(); // Refresh the list
+    } catch (err) {
+      console.error('Failed to close ticket:', err);
+      setFeedbackPopup({
+        type: 'error',
+        title: 'Action Failed',
+        message: `Failed to close ticket: ${err.message}`
+      });
     } finally {
       setIsRecentLoading(false);
     }
@@ -922,6 +971,18 @@ function Home() {
                             <span>{ticket.Delay}</span>
                           </div>
                         )}
+                        {((ticket.CallStatusText || '').toLowerCase() === 'done' || 
+                          (ticket.CallStatus || '').toLowerCase() === 'done' ||
+                          (ticket.CallStatusText || '').toLowerCase() === 'resolved' ||
+                          (ticket.CallStatus || '').toLowerCase() === 'resolved') && (
+                          <button
+                            className="rtc-close-btn"
+                            onClick={(e) => handleCloseTicket(e, ticket)}
+                            title="Close Ticket"
+                          >
+                            <i className="fa-solid fa-circle-xmark"></i> Close
+                          </button>
+                        )}
                       </div>
                     </motion.div>
                   );
@@ -1032,6 +1093,21 @@ function Home() {
               </div>
 
               <div className="detail-footer">
+                {((selectedTicket.CallStatusText || '').toLowerCase() === 'done' || 
+                  (selectedTicket.CallStatus || '').toLowerCase() === 'done' ||
+                  (selectedTicket.CallStatusText || '').toLowerCase() === 'resolved' ||
+                  (selectedTicket.CallStatus || '').toLowerCase() === 'resolved') && (
+                  <button
+                    className="detail-close-ticket-btn"
+                    onClick={(e) => {
+                      handleCloseTicket(e, selectedTicket);
+                      setSelectedTicket(null);
+                    }}
+                    style={{ marginRight: 'auto' }}
+                  >
+                    <i className="fa-solid fa-circle-xmark"></i> Close Ticket
+                  </button>
+                )}
                 <button className="detail-primary-btn" onClick={() => setSelectedTicket(null)}>
                   Close Details
                 </button>
@@ -1065,6 +1141,38 @@ function Home() {
           )
         ))}
       </div>
+
+      {/* Action Feedback Popup Modal */}
+      <AnimatePresence>
+        {feedbackPopup && (
+          <div className="modal-overlay feedback-overlay" onClick={() => setFeedbackPopup(null)}>
+            <motion.div
+              className="feedback-popup-card"
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={`feedback-icon-circle ${feedbackPopup.type}`}>
+                {feedbackPopup.type === 'success' ? (
+                  <i className="fa-solid fa-circle-check"></i>
+                ) : (
+                  <i className="fa-solid fa-circle-exclamation"></i>
+                )}
+              </div>
+              <h3 className="feedback-title">{feedbackPopup.title}</h3>
+              <p className="feedback-message">{feedbackPopup.message}</p>
+              <button 
+                className={`feedback-action-btn ${feedbackPopup.type}`}
+                onClick={() => setFeedbackPopup(null)}
+              >
+                Okay
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
