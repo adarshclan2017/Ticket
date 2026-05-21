@@ -7,13 +7,13 @@ import './Login.css';
 export default function Login() {
   const navigate = useNavigate();
 
-  const [username, setUsername]       = useState('');
-  const [password, setPassword]       = useState('');
-  const [showPass, setShowPass]       = useState(false);
-  const [remember, setRemember]       = useState(false);
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState('');
-  const [success, setSuccess]         = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [remember, setRemember] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,13 +26,13 @@ export default function Login() {
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE}/unniService.asmx/validateUserLogin?Username=${encodeURIComponent(username)}&Password=${encodeURIComponent(password)}`);
-      
+
       if (!response.ok) {
         throw new Error(`Server responded with ${response.status}`);
       }
 
       const text = await response.text();
-      
+
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(text, 'text/xml');
       const stringNode = xmlDoc.getElementsByTagName('string')[0];
@@ -48,7 +48,13 @@ export default function Login() {
         const userData = data.user[0];
         localStorage.setItem('userData', JSON.stringify(userData));
         localStorage.setItem('isLoggedIn', 'true');
-        
+
+        // Access control: only employee 82 OR accesslevel 1 may see L3 & Assign-Task
+        const empId   = Number(userData.internalemployeeid  ?? userData.internal_employee_id  ?? 0);
+        const accLvl  = Number(userData.accesslevel         ?? userData.access_level          ?? 0);
+        const allowed = (empId === 82 || accLvl === 1);
+        localStorage.setItem('canAccessL3AndAssign', allowed ? 'true' : 'false');
+
         setSuccess('Login successful! Redirecting…');
         setTimeout(() => navigate('/home'), 900);
       } else {
@@ -88,7 +94,7 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      <motion.div 
+      <motion.div
         className="login-card"
         variants={containerVariants}
         initial="hidden"
@@ -127,9 +133,9 @@ export default function Login() {
         )}
 
         {/* Form */}
-        <motion.form 
-          className="login-form" 
-          onSubmit={handleSubmit} 
+        <motion.form
+          className="login-form"
+          onSubmit={handleSubmit}
           id="login-form"
           variants={containerVariants}
         >

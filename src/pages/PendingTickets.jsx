@@ -7,6 +7,9 @@ import './PendingTickets.css';
 const userRole = localStorage.getItem('userRole') || 'employee';
 const isEmployee = userRole === 'employee';
 
+// Access-control: only employee 82 OR accesslevel 1 may use L3 & Assign-Task
+const canAccessL3AndAssign = localStorage.getItem('canAccessL3AndAssign') === 'true';
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.5, staggerChildren: 0.06 } },
@@ -84,7 +87,8 @@ export default function PendingTickets() {
   const [assignForm, setAssignForm] = useState(defaultAssignForm);
   const [isConfirming, setIsConfirming] = useState(false);
   const [agents, setAgents] = useState([]);
-  const [viewType, setViewType] = useState('assigned'); // 'assigned' | 'pending' | 'l3'
+  // Default to 'pending' for users who cannot access L3/Assign-Tasks
+  const [viewType, setViewType] = useState(canAccessL3AndAssign ? 'assigned' : 'pending'); // 'assigned' | 'pending' | 'l3'
   const [isEmpDropdownOpen, setIsEmpDropdownOpen] = useState(false);
   const [isTlDropdownOpen, setIsTlDropdownOpen] = useState(false);
   const empDropdownRef = React.useRef(null);
@@ -606,13 +610,15 @@ export default function PendingTickets() {
           </div>
 
           <div className="pt-view-toggle-group">
-            <button
-              className={`pt-toggle-btn ${viewType === 'assigned' ? 'active' : ''}`}
-              onClick={() => setViewType('assigned')}
-            >
-              <i className="fa-solid fa-user-check"></i>
-              Assign Tasks
-            </button>
+            {canAccessL3AndAssign && (
+              <button
+                className={`pt-toggle-btn ${viewType === 'assigned' ? 'active' : ''}`}
+                onClick={() => setViewType('assigned')}
+              >
+                <i className="fa-solid fa-user-check"></i>
+                Assign Tasks
+              </button>
+            )}
             <button
               className={`pt-toggle-btn ${viewType === 'pending' ? 'active' : ''}`}
               onClick={() => setViewType('pending')}
@@ -620,13 +626,15 @@ export default function PendingTickets() {
               <i className="fa-solid fa-clock-rotate-left"></i>
               Pending
             </button>
-            <button
-              className={`pt-toggle-btn ${viewType === 'l3' ? 'active' : ''}`}
-              onClick={() => setViewType('l3')}
-            >
-              <i className="fa-solid fa-angles-up"></i>
-              L3 Request
-            </button>
+            {canAccessL3AndAssign && (
+              <button
+                className={`pt-toggle-btn ${viewType === 'l3' ? 'active' : ''}`}
+                onClick={() => setViewType('l3')}
+              >
+                <i className="fa-solid fa-angles-up"></i>
+                L3 Request
+              </button>
+            )}
           </div>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             {isEmployee && (
@@ -777,15 +785,17 @@ export default function PendingTickets() {
                             </button>
                           </div>
                         )}
-                        <motion.button
-                          className="pt-card-assign-btn"
-                          style={{ marginTop: viewType === 'l3' ? '8px' : '0px' }}
-                          onClick={(e) => { e.stopPropagation(); openAssignModal(ticket); }}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <i className="fa-solid fa-user-plus"></i><span>Assign Task</span>
-                        </motion.button>
+                        {canAccessL3AndAssign && (
+                          <motion.button
+                            className="pt-card-assign-btn"
+                            style={{ marginTop: viewType === 'l3' ? '8px' : '0px' }}
+                            onClick={(e) => { e.stopPropagation(); openAssignModal(ticket); }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <i className="fa-solid fa-user-plus"></i><span>Assign Task</span>
+                          </motion.button>
+                        )}
                       </div>
                     </motion.div>
                   );
@@ -945,9 +955,11 @@ export default function PendingTickets() {
                             <button className={`pt-action-btn done ${(ticket.CallStatus || '').toUpperCase() === 'DONE' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'DONE')} title="Complete Task">
                               <i className="fa-solid fa-check"></i><span>Done</span>
                             </button>
-                            <button className={`pt-action-btn l3 ${(ticket.CallStatus || '').toUpperCase() === 'L3 REQUEST' || (ticket.CallStatus || '').toUpperCase() === 'L3' || (ticket.CallStatus || '').toUpperCase() === 'LEVEL3' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'L3 Request')} title="Request L3 Support">
-                              <i className="fa-solid fa-angles-up"></i><span>L3</span>
-                            </button>
+                            {canAccessL3AndAssign && (
+                              <button className={`pt-action-btn l3 ${(ticket.CallStatus || '').toUpperCase() === 'L3 REQUEST' || (ticket.CallStatus || '').toUpperCase() === 'L3' || (ticket.CallStatus || '').toUpperCase() === 'LEVEL3' ? 'active' : ''}`} onClick={(e) => handleUpdateStatus(e, ticket, 'L3 Request')} title="Request L3 Support">
+                                <i className="fa-solid fa-angles-up"></i><span>L3</span>
+                              </button>
+                            )}
                           </div>
                         </div>
                       </motion.div>

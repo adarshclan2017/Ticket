@@ -68,26 +68,26 @@ function Home() {
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { type: 'spring', damping: 20, stiffness: 140 } 
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', damping: 20, stiffness: 140 }
     }
   };
 
   const modalVariants = {
     hidden: { opacity: 0, scale: 0.94, y: 25 },
-    visible: { 
-      opacity: 1, 
-      scale: 1, 
-      y: 0, 
-      transition: { type: 'spring', damping: 24, stiffness: 280 } 
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { type: 'spring', damping: 24, stiffness: 280 }
     },
-    exit: { 
-      opacity: 0, 
-      scale: 0.94, 
-      y: 20, 
-      transition: { duration: 0.18 } 
+    exit: {
+      opacity: 0,
+      scale: 0.94,
+      y: 20,
+      transition: { duration: 0.18 }
     }
   };
 
@@ -123,12 +123,12 @@ function Home() {
       try {
         const res = await fetch(`${API_BASE}/unniService.asmx/loadSupportType`);
         const text = await res.text();
-        
+
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(text, 'text/xml');
         const stringNode = xmlDoc.getElementsByTagName('string')[0];
         const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
-        
+
         const data = JSON.parse(jsonStr);
         setSupportTypes(data.SupportType || []);
       } catch (err) {
@@ -324,12 +324,12 @@ function Home() {
       const internalUserId = userData.internal_user_id || '4';
       const res = await fetch(`${API_BASE}/unniService.asmx/loadRaisedSupportTickets?InternalUserID=${internalUserId}`);
       const text = await res.text();
-      
+
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(text, 'text/xml');
       const stringNode = xmlDoc.getElementsByTagName('string')[0];
       const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
-      
+
       const data = JSON.parse(jsonStr);
       // SupportTickets is the expected key based on API tests
       setRecentTickets(data.SupportTickets || []);
