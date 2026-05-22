@@ -5,11 +5,11 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://148.72.215.143:180/$1"
+      "destination": "http://148.72.215.143:155/$1"
     },
     {
       "source": "/inpack-api/(.*)",
-      "destination": "http://148.72.215.143:2025/$1"
+      "destination": "http://148.72.215.143:1355/$1"
     },
     {
       "source": "/((?!assets/).*)",

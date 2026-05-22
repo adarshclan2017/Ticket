@@ -7,12 +7,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://148.72.215.143:180',
+        target: 'http://148.72.215.143:155',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
       '/inpack-api': {
-        target: 'http://148.72.215.143:2025',
+        target: 'http://148.72.215.143:1355',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/inpack-api/, ''),
       },
