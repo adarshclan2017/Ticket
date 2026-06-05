@@ -215,10 +215,10 @@ export default function RoleSelect() {
   const handleBranchSelectProceed = (e) => {
     if (e) e.preventDefault();
     if (!selectedBranch) { setCustError('Please select a branch.'); return; }
-    
+
     setCustError('');
     setCustSuccess('');
-    
+
     const expectedPin = selectedBranch.pin || selectedBranch.PIN || '2255';
     // Reset the PIN inputs to empty for manual typing
     setPinCode(['', '', '', '']);
@@ -253,7 +253,7 @@ export default function RoleSelect() {
       const internalCompanyId = selectedBranch.internal_company_id || selectedBranch.InternalCompanyID || '';
       const licenseKey = selectedBranch.license_key || selectedBranch.LicenseKey || '';
       const isApprover = selectedBranch.is_approver || selectedBranch.IsApprover || '';
-      
+
       const companyName = clientData?.companies?.[0]?.company_name || '';
       const clientId = clientData?.client_id || '';
       const clientName = clientData?.client_name || '';
@@ -269,7 +269,7 @@ export default function RoleSelect() {
       localStorage.setItem('customerInternalCompanyId', internalCompanyId);
       localStorage.setItem('customerLicenseKey', licenseKey);
       localStorage.setItem('customerIsApprover', isApprover);
-      
+
       localStorage.setItem('customerCompanyName', companyName);
       localStorage.setItem('customerClientId', clientId);
       localStorage.setItem('customerClientName', clientName);
@@ -287,7 +287,7 @@ export default function RoleSelect() {
       if (clientData) {
         localStorage.setItem('customerResponse', JSON.stringify(clientData));
         localStorage.setItem('customerClientData', JSON.stringify(clientData));
-        
+
         // Store all fields of the response individually in internal storage
         localStorage.setItem('success', String(clientData.success));
         localStorage.setItem('message', String(clientData.message || ''));

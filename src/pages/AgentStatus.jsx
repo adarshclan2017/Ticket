@@ -49,12 +49,12 @@ function AgentStatus() {
     try {
       const res = await fetch(`${API_BASE}/unniService.asmx/loadAgentStatus?EntryDate=${date}`);
       const text = await res.text();
-      
+
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(text, 'text/xml');
       const stringNode = xmlDoc.getElementsByTagName('string')[0];
       const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
-      
+
       const data = JSON.parse(jsonStr);
       setAgents(data.success && data.AgentStatus ? data.AgentStatus : []);
       setLastFetched(new Date().toLocaleTimeString());
@@ -105,11 +105,11 @@ function AgentStatus() {
   /* ── Status config ──────────────────────────── */
   const getStatusConfig = (status) => {
     switch ((status || '').toLowerCase()) {
-      case 'online':  return { color: '#10b981', bg: 'rgba(16,185,129,0.12)', label: 'Online',  icon: 'fa-circle-check',  glow: '0 0 12px rgba(16,185,129,0.4)' };
-      case 'offline': return { color: '#94a3b8', bg: 'rgba(148,163,184,0.12)', label: 'Offline', icon: 'fa-circle-minus',  glow: 'none' };
-      case 'busy':    return { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  label: 'Busy',    icon: 'fa-circle-pause',  glow: '0 0 12px rgba(245,158,11,0.3)' };
-      case 'break':   return { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)',  label: 'Break',   icon: 'fa-mug-hot',       glow: '0 0 12px rgba(139,92,246,0.3)' };
-      default:        return { color: '#6366f1', bg: 'rgba(99,102,241,0.12)',  label: status || 'Unknown', icon: 'fa-circle-dot', glow: 'none' };
+      case 'online': return { color: '#10b981', bg: 'rgba(16,185,129,0.12)', label: 'Online', icon: 'fa-circle-check', glow: '0 0 12px rgba(16,185,129,0.4)' };
+      case 'offline': return { color: '#94a3b8', bg: 'rgba(148,163,184,0.12)', label: 'Offline', icon: 'fa-circle-minus', glow: 'none' };
+      case 'busy': return { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', label: 'Busy', icon: 'fa-circle-pause', glow: '0 0 12px rgba(245,158,11,0.3)' };
+      case 'break': return { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)', label: 'Break', icon: 'fa-mug-hot', glow: '0 0 12px rgba(139,92,246,0.3)' };
+      default: return { color: '#6366f1', bg: 'rgba(99,102,241,0.12)', label: status || 'Unknown', icon: 'fa-circle-dot', glow: 'none' };
     }
   };
 
@@ -118,22 +118,22 @@ function AgentStatus() {
     const size = 120, stroke = 10, radius = (size - stroke) / 2;
     const circumference = 2 * Math.PI * radius;
     const segments = [
-      { key: 'online',  count: stats.online,  color: '#10b981' },
+      { key: 'online', count: stats.online, color: '#10b981' },
       { key: 'offline', count: stats.offline, color: '#94a3b8' },
-      { key: 'busy',    count: stats.busy,    color: '#f59e0b' },
+      { key: 'busy', count: stats.busy, color: '#f59e0b' },
     ].filter(s => s.count > 0);
 
     let offset = 0;
     return (
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="donut-chart">
         {/* background ring */}
-        <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#f1f5f9" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#f1f5f9" strokeWidth={stroke} />
         {segments.map(seg => {
           const dash = (seg.count / (stats.total || 1)) * circumference;
           const el = (
             <circle
               key={seg.key}
-              cx={size/2} cy={size/2} r={radius}
+              cx={size / 2} cy={size / 2} r={radius}
               fill="none" stroke={seg.color} strokeWidth={stroke}
               strokeDasharray={`${dash} ${circumference - dash}`}
               strokeDashoffset={-offset}
@@ -152,8 +152,8 @@ function AgentStatus() {
 
   /* ── Animation variants ─────────────────────── */
   const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.4, staggerChildren: 0.06 } } };
-  const itemVariants     = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } } };
-  const cardVariants     = { hidden: { opacity: 0, scale: 0.92 }, visible: { opacity: 1, scale: 1, transition: { type: 'spring', damping: 22, stiffness: 260 } } };
+  const itemVariants = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } } };
+  const cardVariants = { hidden: { opacity: 0, scale: 0.92 }, visible: { opacity: 1, scale: 1, transition: { type: 'spring', damping: 22, stiffness: 260 } } };
 
   return (
     <div className={`agent-page ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -169,7 +169,7 @@ function AgentStatus() {
         <nav className="nav-links">
           {navItems.map(item => (
             <a key={item.name} className={`nav-item ${item.name === 'Agent Status' ? 'active' : ''}`}
-               href={item.href} title={isSidebarCollapsed ? item.name : ''} style={{ textDecoration: 'none' }}>
+              href={item.href} title={isSidebarCollapsed ? item.name : ''} style={{ textDecoration: 'none' }}>
               <i className={`fa-solid ${item.icon}`}></i>
               {!isSidebarCollapsed && <span>{item.name}</span>}
             </a>
@@ -231,10 +231,10 @@ function AgentStatus() {
 
           {/* Stat Cards */}
           {[
-            { label: 'Total Agents',  value: stats.total,     icon: 'fa-users',          gradient: 'linear-gradient(135deg, #667eea, #764ba2)', lightBg: 'rgba(102,126,234,0.08)' },
-            { label: 'Online Now',    value: stats.online,     icon: 'fa-circle-check',   gradient: 'linear-gradient(135deg, #10b981, #059669)', lightBg: 'rgba(16,185,129,0.08)' },
-            { label: 'Offline',       value: stats.offline,    icon: 'fa-circle-minus',   gradient: 'linear-gradient(135deg, #94a3b8, #64748b)', lightBg: 'rgba(148,163,184,0.08)' },
-            { label: 'Call Queue',    value: stats.totalCallQ, icon: 'fa-phone-volume',   gradient: 'linear-gradient(135deg, #f59e0b, #d97706)', lightBg: 'rgba(245,158,11,0.08)' },
+            { label: 'Total Agents', value: stats.total, icon: 'fa-users', gradient: 'linear-gradient(135deg, #667eea, #764ba2)', lightBg: 'rgba(102,126,234,0.08)' },
+            { label: 'Online Now', value: stats.online, icon: 'fa-circle-check', gradient: 'linear-gradient(135deg, #10b981, #059669)', lightBg: 'rgba(16,185,129,0.08)' },
+            { label: 'Offline', value: stats.offline, icon: 'fa-circle-minus', gradient: 'linear-gradient(135deg, #94a3b8, #64748b)', lightBg: 'rgba(148,163,184,0.08)' },
+            { label: 'Call Queue', value: stats.totalCallQ, icon: 'fa-phone-volume', gradient: 'linear-gradient(135deg, #f59e0b, #d97706)', lightBg: 'rgba(245,158,11,0.08)' },
           ].map((card, i) => (
             <motion.div className="as-metric-card" key={card.label} variants={cardVariants}
               whileHover={{ y: -4, boxShadow: '0 12px 32px rgba(0,0,0,0.1)' }}>

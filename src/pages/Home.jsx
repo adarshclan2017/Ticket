@@ -4,6 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../apiConfig';
 import './Home.css';
 
+// Safe JSON parser — handles raw control characters (\r\n) in API response strings
+function safeJsonParse(str) {
+  if (!str) return null;
+  try {
+    return JSON.parse(str);
+  } catch {
+    try {
+      return JSON.parse(str.replace(/[\x00-\x1F]/g, ' '));
+    } catch (e2) {
+      console.error('[safeJsonParse] Failed:', e2.message);
+      throw e2;
+    }
+  }
+}
+
 function Home() {
   // Read role set by RoleSelect page
   const userRole = localStorage.getItem('userRole') || 'employee'; // default to employee
@@ -61,7 +76,7 @@ function Home() {
         'branchUserId',
         'customerBranch'
       ];
-      
+
       customerKeys.forEach(key => {
         const val = localStorage.getItem(key);
         if (val !== null) {
@@ -315,7 +330,7 @@ function Home() {
 
     try {
       // Build query parameters from form data and advanced settings
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const userData = safeJsonParse(localStorage.getItem('userData') || '{}');
       const params = new URLSearchParams({
         InternalUserID: isCustomer ? (localStorage.getItem('customerBranchUserId') || '4') : (userData.internal_user_id || '4'),
         UserName: advancedSettings.userName || (isCustomer ? localStorage.getItem('customerUserName') : userData.user_name) || 'Admin',
@@ -343,9 +358,8 @@ function Home() {
 
       let result = null;
       try {
-        result = JSON.parse(jsonStr);
+        result = safeJsonParse(jsonStr);
       } catch {
-        // If not JSON, treat raw text as the response
         result = { message: jsonStr };
       }
 
@@ -382,9 +396,10 @@ function Home() {
     setIsRecentLoading(true);
     setRecentError(null);
     try {
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const userData = safeJsonParse(localStorage.getItem('userData') || '{}');
       const internalUserId = isCustomer ? (localStorage.getItem('customerBranchUserId') || '4') : (userData.internal_user_id || '4');
       const res = await fetch(`${API_BASE}/unniService.asmx/loadRaisedSupportTickets?InternalUserID=${internalUserId}`);
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const text = await res.text();
 
       const parser = new DOMParser();
@@ -392,13 +407,11 @@ function Home() {
       const stringNode = xmlDoc.getElementsByTagName('string')[0];
       const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
 
-      const data = JSON.parse(jsonStr);
-      // SupportTickets is the expected key based on API tests
+      const data = safeJsonParse(jsonStr);
       setRecentTickets(data.SupportTickets || []);
-      console.log('Tickets received:', data.SupportTickets);
     } catch (err) {
       console.error('Failed to load recent tickets:', err);
-      setRecentError('Failed to load tickets. Please try again.');
+      setRecentError('Could not load recent records. Please check your connection.');
     } finally {
       setIsRecentLoading(false);
     }
@@ -408,7 +421,7 @@ function Home() {
     e.stopPropagation();
     try {
       setIsRecentLoading(true);
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+      const userData = safeJsonParse(localStorage.getItem('userData') || '{}');
       const internalUserId = isCustomer ? (localStorage.getItem('customerBranchUserId') || '4') : (userData.internal_user_id || '4');
 
       const params = new URLSearchParams({
@@ -971,18 +984,18 @@ function Home() {
                             <span>{ticket.Delay}</span>
                           </div>
                         )}
-                        {((ticket.CallStatusText || '').toLowerCase() === 'done' || 
+                        {((ticket.CallStatusText || '').toLowerCase() === 'done' ||
                           (ticket.CallStatus || '').toLowerCase() === 'done' ||
                           (ticket.CallStatusText || '').toLowerCase() === 'resolved' ||
                           (ticket.CallStatus || '').toLowerCase() === 'resolved') && (
-                          <button
-                            className="rtc-close-btn"
-                            onClick={(e) => handleCloseTicket(e, ticket)}
-                            title="Close Ticket"
-                          >
-                            <i className="fa-solid fa-circle-xmark"></i> Close
-                          </button>
-                        )}
+                            <button
+                              className="rtc-close-btn"
+                              onClick={(e) => handleCloseTicket(e, ticket)}
+                              title="Close Ticket"
+                            >
+                              <i className="fa-solid fa-circle-xmark"></i> Close
+                            </button>
+                          )}
                       </div>
                     </motion.div>
                   );
@@ -1093,21 +1106,21 @@ function Home() {
               </div>
 
               <div className="detail-footer">
-                {((selectedTicket.CallStatusText || '').toLowerCase() === 'done' || 
+                {((selectedTicket.CallStatusText || '').toLowerCase() === 'done' ||
                   (selectedTicket.CallStatus || '').toLowerCase() === 'done' ||
                   (selectedTicket.CallStatusText || '').toLowerCase() === 'resolved' ||
                   (selectedTicket.CallStatus || '').toLowerCase() === 'resolved') && (
-                  <button
-                    className="detail-close-ticket-btn"
-                    onClick={(e) => {
-                      handleCloseTicket(e, selectedTicket);
-                      setSelectedTicket(null);
-                    }}
-                    style={{ marginRight: 'auto' }}
-                  >
-                    <i className="fa-solid fa-circle-xmark"></i> Close Ticket
-                  </button>
-                )}
+                    <button
+                      className="detail-close-ticket-btn"
+                      onClick={(e) => {
+                        handleCloseTicket(e, selectedTicket);
+                        setSelectedTicket(null);
+                      }}
+                      style={{ marginRight: 'auto' }}
+                    >
+                      <i className="fa-solid fa-circle-xmark"></i> Close Ticket
+                    </button>
+                  )}
                 <button className="detail-primary-btn" onClick={() => setSelectedTicket(null)}>
                   Close Details
                 </button>
@@ -1163,7 +1176,7 @@ function Home() {
               </div>
               <h3 className="feedback-title">{feedbackPopup.title}</h3>
               <p className="feedback-message">{feedbackPopup.message}</p>
-              <button 
+              <button
                 className={`feedback-action-btn ${feedbackPopup.type}`}
                 onClick={() => setFeedbackPopup(null)}
               >

@@ -50,8 +50,8 @@ export default function Login() {
         localStorage.setItem('isLoggedIn', 'true');
 
         // Access control: only employee 82 OR accesslevel 1 may see L3 & Assign-Task
-        const empId   = Number(userData.internalemployeeid  ?? userData.internal_employee_id  ?? 0);
-        const accLvl  = Number(userData.accesslevel         ?? userData.access_level          ?? 0);
+        const empId = Number(userData.internalemployeeid ?? userData.internal_employee_id ?? 0);
+        const accLvl = Number(userData.accesslevel ?? userData.access_level ?? 0);
         const allowed = (empId === 82 || accLvl === 1);
         localStorage.setItem('canAccessL3AndAssign', allowed ? 'true' : 'false');
 

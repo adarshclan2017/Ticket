@@ -3,6 +3,27 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { API_BASE } from '../apiConfig';
 import './PendingTickets.css';
 
+// Safe JSON parser — converts literal control characters inside JSON strings to \uXXXX escapes.
+// The API sometimes embeds raw \r\n characters inside field values (e.g. Remarks),
+// which are invalid in JSON strings but valid when escaped as \u000D\u000A.
+function safeJsonParse(str) {
+  if (!str) return null;
+  // First try direct parse
+  try {
+    return JSON.parse(str);
+  } catch {
+    // If that fails, replace ALL literal control characters with spaces.
+    // e.g. a raw \r or \n inside a JSON string value makes it invalid.
+    try {
+      const cleaned = str.replace(/[\x00-\x1F]/g, ' ');
+      return JSON.parse(cleaned);
+    } catch (e2) {
+      console.error('[safeJsonParse] Both parse attempts failed.', { e2, preview: str?.substring(0, 400) });
+      throw e2;
+    }
+  }
+}
+
 // Role helper
 const userRole = localStorage.getItem('userRole') || 'employee';
 const isEmployee = userRole === 'employee';
@@ -87,8 +108,8 @@ export default function PendingTickets() {
   const [assignForm, setAssignForm] = useState(defaultAssignForm);
   const [isConfirming, setIsConfirming] = useState(false);
   const [agents, setAgents] = useState([]);
-  // Default to 'pending' for users who cannot access L3/Assign-Tasks
-  const [viewType, setViewType] = useState(canAccessL3AndAssign ? 'assigned' : 'pending'); // 'assigned' | 'pending' | 'l3'
+  // Default to 'assigned' (so regular employees see 'My Ticket' and TLs see 'Assign Tasks')
+  const [viewType, setViewType] = useState('assigned'); // 'assigned' | 'pending' | 'l3'
   const [isEmpDropdownOpen, setIsEmpDropdownOpen] = useState(false);
   const [isTlDropdownOpen, setIsTlDropdownOpen] = useState(false);
   const empDropdownRef = React.useRef(null);
@@ -235,10 +256,15 @@ export default function PendingTickets() {
     setIsRecentLoading(true);
     setRecentError(null);
     try {
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const internalUserId = userData.internal_user_id || '4';
+      const userData = safeJsonParse(localStorage.getItem('userData') || '{}');
+      const internalUserId =
+        userData.internal_user_id ||
+        userData.internaluserid ||
+        userData.InternalUserID ||
+        '4';
 
       const res = await fetch(`${API_BASE}/unniService.asmx/loadRaisedSupportTickets?InternalUserID=${internalUserId}`);
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
       const text = await res.text();
 
       const parser = new DOMParser();
@@ -246,10 +272,12 @@ export default function PendingTickets() {
       const stringNode = xmlDoc.getElementsByTagName('string')[0];
       const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
 
-      const data = JSON.parse(jsonStr);
+      const data = safeJsonParse(jsonStr);
+      // "NoData" means success but no tickets raised by this user — not an error
       setRecentTickets(data.SupportTickets || []);
     } catch (err) {
-      setRecentError('Failed to load tickets. Please try again.');
+      console.error('[fetchRecentTickets] Error:', err);
+      setRecentError('Could not load recent records. Please check your connection.');
     } finally {
       setIsRecentLoading(false);
     }
@@ -259,20 +287,18 @@ export default function PendingTickets() {
     setLoading(true);
     setError(null);
     try {
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-      const internalEmployeeId = userData.internal_employee_id || '10';
-      const internalEntryFromId = userData.internal_employee_id || '0';
+      const userData = safeJsonParse(localStorage.getItem('userData') || '{}');
+      const internalEmployeeId =
+        userData.internal_employee_id ||
+        userData.internalemployeeid ||
+        '10';
 
-      // Switch API based on viewType
       let endpoint = 'loadAgentsTickets';
-      if (viewType === 'pending') {
-        endpoint = 'loadRaisedSupportTicketsForTL';
-      } else if (viewType === 'l3') {
-        endpoint = 'loadLevel3Tickets';
-      }
+      if (viewType === 'pending') endpoint = 'loadRaisedSupportTicketsForTL';
+      else if (viewType === 'l3') endpoint = 'loadLevel3Tickets';
 
       const res = await fetch(
-        `${API_BASE}/unniService.asmx/${endpoint}?InternalEmployeeID=${internalEmployeeId}&InternalEntryFromID=${internalEntryFromId}`
+        `${API_BASE}/unniService.asmx/${endpoint}?InternalEmployeeID=${internalEmployeeId}&InternalEntryFromID=${internalEmployeeId}`
       );
       const text = await res.text();
 
@@ -281,27 +307,22 @@ export default function PendingTickets() {
       const stringNode = xmlDoc.getElementsByTagName('string')[0];
       const jsonStr = stringNode ? stringNode.textContent || stringNode.innerText : text;
 
-      const responseData = JSON.parse(jsonStr);
+      const responseData = safeJsonParse(jsonStr);
 
       if (responseData.success) {
         let groups = [];
         if (viewType === 'pending' || viewType === 'l3') {
-          // Group unassigned or level 3 tickets
           const raw = responseData.SupportTickets || responseData.data || [];
-          const list = Array.isArray(raw) ? raw : (Object.values(raw).flat() || []);
+          const list = Array.isArray(raw) ? raw : Object.values(raw).flat();
           groups = [{
             agentName: viewType === 'pending' ? 'Pending Assignment' : 'L3 Requests',
             tickets: list.map(t => ({ ...t, CreationDate: t.RaisedTime || t.CreationDate }))
           }];
         } else {
-          // Grouped by agent from API
           if (responseData.data) {
             groups = Object.entries(responseData.data).map(([name, list]) => ({
               agentName: name,
-              tickets: list.map(t => ({
-                ...t,
-                CreationDate: t.RaisedTime || t.CreationDate
-              }))
+              tickets: list.map(t => ({ ...t, CreationDate: t.RaisedTime || t.CreationDate }))
             }));
           }
         }
@@ -310,7 +331,6 @@ export default function PendingTickets() {
         setTickets([]);
       }
     } catch (err) {
-      console.error('Failed to load tickets:', err);
       setError('Failed to load tickets. Please check your connection and try again.');
     } finally {
       setLoading(false);
@@ -610,22 +630,22 @@ export default function PendingTickets() {
           </div>
 
           <div className="pt-view-toggle-group">
+            <button
+              className={`pt-toggle-btn ${viewType === 'assigned' ? 'active' : ''}`}
+              onClick={() => setViewType('assigned')}
+            >
+              <i className="fa-solid fa-user-check"></i>
+              {canAccessL3AndAssign ? 'Assign Tasks' : 'My Ticket'}
+            </button>
             {canAccessL3AndAssign && (
               <button
-                className={`pt-toggle-btn ${viewType === 'assigned' ? 'active' : ''}`}
-                onClick={() => setViewType('assigned')}
+                className={`pt-toggle-btn ${viewType === 'pending' ? 'active' : ''}`}
+                onClick={() => setViewType('pending')}
               >
-                <i className="fa-solid fa-user-check"></i>
-                Assign Tasks
+                <i className="fa-solid fa-clock-rotate-left"></i>
+                Pending
               </button>
             )}
-            <button
-              className={`pt-toggle-btn ${viewType === 'pending' ? 'active' : ''}`}
-              onClick={() => setViewType('pending')}
-            >
-              <i className="fa-solid fa-clock-rotate-left"></i>
-              Pending
-            </button>
             {canAccessL3AndAssign && (
               <button
                 className={`pt-toggle-btn ${viewType === 'l3' ? 'active' : ''}`}
